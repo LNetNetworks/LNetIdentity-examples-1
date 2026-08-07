@@ -1,6 +1,10 @@
 import { cookies } from "next/headers";
 
 import type { TokenResponse } from "./identity-api";
+import { decodeJwtPayload, rolesFrom } from "./jwt";
+
+/** Role required to use this portal. Keycloak reports it lower-cased. */
+export const VERIFIER_ROLE = "verifier";
 
 /**
  * The tokens live in httpOnly *session* cookies: no `maxAge`/`expires`, so the
@@ -31,9 +35,21 @@ export type Session = {
   accessToken: string;
   refreshToken: string | null;
   did: string | null;
-  /** Epoch milliseconds, or null when the API did not report `expires_in`. */
+  /** Epoch milliseconds, or null when the token carried no expiry. */
   expiresAt: number | null;
+  roles: string[];
 };
+
+/** Roles carried by an access token, or `[]` if it cannot be read. */
+export function rolesOf(accessToken: string): string[] {
+  const payload = decodeJwtPayload(accessToken);
+  return payload ? rolesFrom(payload) : [];
+}
+
+/** Whether an access token grants the verifier role. */
+export function hasVerifierRole(accessToken: string): boolean {
+  return rolesOf(accessToken).includes(VERIFIER_ROLE);
+}
 
 /**
  * Persists the token pair. Must be called from a Server Function or Route
@@ -50,15 +66,29 @@ export async function createSession(tokens: TokenResponse): Promise<void> {
   if (tokens.did) {
     store.set(DID_COOKIE, tokens.did, cookieOptions);
   }
-  if (typeof tokens.expires_in === "number") {
-    const expiresAt = Date.now() + tokens.expires_in * 1000;
+
+  // The token's own `exp` beats `expires_in`, which is only relative to a
+  // request whose round-trip time we do not know.
+  const exp = decodeJwtPayload(tokens.access_token)?.exp;
+  const expiresAt =
+    typeof exp === "number"
+      ? exp * 1000
+      : typeof tokens.expires_in === "number"
+        ? Date.now() + tokens.expires_in * 1000
+        : null;
+
+  if (expiresAt !== null) {
     store.set(EXPIRES_AT_COOKIE, String(expiresAt), cookieOptions);
   }
 }
 
 /**
- * Reads the session. Returns null when there is no access token or when the
- * one we hold has already expired — an expired session is no session.
+ * Reads the session. Returns null when there is no access token, when the one
+ * we hold has already expired, or when it lacks the verifier role.
+ *
+ * Re-checking the role here rather than only at login keeps `/` and `/login`
+ * on one definition of "logged in" — otherwise a role-less session would make
+ * them redirect at each other forever.
  *
  * Safe to call from Server Components (it only reads).
  */
@@ -73,11 +103,15 @@ export async function getSession(): Promise<Session | null> {
     return null;
   }
 
+  const roles = rolesOf(accessToken);
+  if (!roles.includes(VERIFIER_ROLE)) return null;
+
   return {
     accessToken,
     refreshToken: store.get(REFRESH_TOKEN_COOKIE)?.value ?? null,
     did: store.get(DID_COOKIE)?.value ?? null,
     expiresAt: expiresAt && Number.isFinite(expiresAt) ? expiresAt : null,
+    roles,
   };
 }
 

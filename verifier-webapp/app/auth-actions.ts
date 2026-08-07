@@ -7,11 +7,19 @@ import {
   login as apiLogin,
   logout as apiLogout,
 } from "@/lib/identity-api";
-import { clearSession, createSession, getSession } from "@/lib/session";
+import {
+  clearSession,
+  createSession,
+  getSession,
+  hasVerifierRole,
+} from "@/lib/session";
 
 export type LoginState = {
   error: string | null;
 };
+
+const MISSING_ROLE_MESSAGE =
+  "Debe tener el rol Verifier para poder acceder a esta pagina consulte con el administrador";
 
 /**
  * The API answers bad credentials with a 500 carrying an
@@ -45,6 +53,20 @@ export async function loginAction(
     if (!tokens?.access_token) {
       return { error: "La API no devolvió un token de acceso." };
     }
+
+    // The credentials are valid but this portal is verifier-only. No session is
+    // created; the tokens we were just handed are discarded server-side too.
+    if (!hasVerifierRole(tokens.access_token)) {
+      if (tokens.refresh_token) {
+        try {
+          await apiLogout(tokens.access_token, tokens.refresh_token);
+        } catch (error) {
+          if (!(error instanceof IdentityApiError)) throw error;
+        }
+      }
+      return { error: MISSING_ROLE_MESSAGE };
+    }
+
     await createSession(tokens);
   } catch (error) {
     if (error instanceof IdentityApiError) {
