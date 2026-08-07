@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Early scaffold. `verifier-webapp/` is a Next.js 16 app with login against the Wallet API and a mock QR panel; actual credential verification is not wired up yet. The other three roles have no code at all.
+Early scaffold. `verifier-webapp/` is a Next.js 16 app with login against the Wallet API and a QR panel that encodes the real verification URL from `GET /verifier/verification-url`; consuming the resulting presentation (`POST /verify`) is not wired up yet. The other three roles have no code at all.
 
 There is **no test framework configured** in any app; `npm run lint` and `npm run build` are currently the only verification available. Add the test command here once a runner is set up.
 

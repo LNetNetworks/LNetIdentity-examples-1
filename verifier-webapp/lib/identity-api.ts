@@ -88,6 +88,49 @@ export function login(user: string, password: string): Promise<TokenResponse> {
   });
 }
 
+/** `VerificationUrlResponse` — the body of `GET /verifier/verification-url`. */
+export type VerificationUrlResponse = {
+  url?: string;
+};
+
+/**
+ * `GET /verifier/verification-url` — the URL a holder's wallet opens to present
+ * a credential to this verifier. Verifier role only; the DID it is bound to
+ * comes from the bearer token.
+ */
+export function getVerificationUrl(
+  accessToken: string,
+): Promise<VerificationUrlResponse> {
+  return request<VerificationUrlResponse>("/verifier/verification-url", {
+    method: "GET",
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+}
+
+/** `CredentialSummary` in the OpenAPI document. */
+export type CredentialSummary = {
+  id?: string;
+  did_holder?: string;
+  type?: string;
+};
+
+/**
+ * `GET /verifier/{did}` — the Verifiable Presentations sent to this verifier.
+ * Verifier role only.
+ */
+export function listReceivedPresentations(
+  accessToken: string,
+  did: string,
+): Promise<CredentialSummary[]> {
+  return request<CredentialSummary[]>(
+    `/verifier/${encodeURIComponent(did)}`,
+    {
+      method: "GET",
+      headers: { Authorization: `Bearer ${accessToken}` },
+    },
+  );
+}
+
 /** `POST /logout` — invalidates the refresh token server-side. */
 export function logout(
   accessToken: string,
