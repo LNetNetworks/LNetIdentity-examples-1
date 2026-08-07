@@ -4,7 +4,14 @@ import { useSession } from '../auth/useSession'
 import { AppShell } from '../components/AppShell'
 import { CredentialCard } from '../components/CredentialCard'
 import { CheckIcon, InboxIcon, ShareIcon, XIcon } from '../components/Icons'
-import { Alert, CopyableValue, DataRow, EmptyState, Loading } from '../components/Ui'
+import {
+  Alert,
+  CopyableValue,
+  DataRow,
+  EmptyState,
+  Loading,
+  TechnicalDetails,
+} from '../components/Ui'
 import { getCachedDetail, useHolderCredentials } from '../hooks/useCredentials'
 import * as api from '../lib/api'
 import { credentialStatus, humanizeType, validUntil } from '../lib/credentials'
@@ -35,6 +42,7 @@ export function Share() {
   )
   const [phase, setPhase] = useState<Phase>('select')
   const [resultMessage, setResultMessage] = useState<string | null>(null)
+  const [resultError, setResultError] = useState<unknown>(null)
 
   // Con una sola credencial no tiene sentido obligar a elegir.
   useEffect(() => {
@@ -50,6 +58,7 @@ export function Share() {
 
     setPhase('sending')
     setResultMessage(null)
+    setResultError(null)
 
     try {
       const response = await api.shareVerify(verifierDid, {
@@ -65,6 +74,7 @@ export function Share() {
           ? cause.message
           : 'No se pudo compartir la credencial. Intentá de nuevo.',
       )
+      setResultError(cause)
       setPhase('error')
     }
   }
@@ -117,6 +127,17 @@ export function Share() {
             )}
           </div>
         </div>
+
+        {!success && (
+          <TechnicalDetails
+            error={resultError}
+            context={{
+              'did_holder': holderDid ?? undefined,
+              'id_vc': selectedId ?? undefined,
+              'did_verifier': verifierDid,
+            }}
+          />
+        )}
 
         <div className="stack stack--tight">
           {!success && (
