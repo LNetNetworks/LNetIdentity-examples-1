@@ -1,4 +1,4 @@
-# Proof Identity Wallet
+# Wallet | Identity
 
 Wallet PWA de credenciales verificables sobre el servicio **D-Wallet**. Funciona como
 web app en el navegador y se puede instalar en la pantalla de inicio de Android e iOS

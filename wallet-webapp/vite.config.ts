@@ -11,8 +11,9 @@ export default defineConfig({
       includeAssets: ['icons/apple-touch-icon-180.png', 'icons/favicon.svg'],
       manifest: {
         id: '/',
-        name: 'Proof Identity Wallet',
-        short_name: 'Proof Wallet',
+        name: 'Wallet | Identity',
+        // Etiqueta del icono en la pantalla de inicio: tiene que ser corta o se trunca.
+        short_name: 'Wallet',
         description:
           'Wallet de credenciales verificables: consulta tus credenciales y compártelas con un verificador escaneando un QR.',
         lang: 'es',
