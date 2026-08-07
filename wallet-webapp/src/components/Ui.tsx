@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { ApiError } from '../lib/api'
 import { AlertTriangleIcon, CheckIcon, CopyIcon, InfoIcon } from './Icons'
 
 /* -------------------------------------------------------------------------- */
@@ -76,6 +77,59 @@ export function DataRow({
       <span className="data-row__label">{label}</span>
       <span className={mono ? 'data-row__value mono' : 'data-row__value'}>{children}</span>
     </div>
+  )
+}
+
+/**
+ * Detalle crudo del error, plegado. En el teléfono no hay DevTools, así que sin
+ * esto un fallo del backend es indistinguible de un bug de la app.
+ */
+export function TechnicalDetails({
+  error,
+  context,
+}: {
+  error: unknown
+  context?: Record<string, string | undefined>
+}) {
+  const [copied, setCopied] = useState(false)
+
+  const lines: string[] = []
+  if (error instanceof ApiError) lines.push(error.details)
+  else if (error instanceof Error) lines.push(`${error.name}: ${error.message}`)
+  else if (error !== undefined && error !== null) lines.push(String(error))
+
+  for (const [key, value] of Object.entries(context ?? {})) {
+    if (value) lines.push(`${key}: ${value}`)
+  }
+
+  if (lines.length === 0) return null
+  const text = lines.join('\n')
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1600)
+    } catch {
+      /* El texto queda visible y seleccionable igual. */
+    }
+  }
+
+  return (
+    <details className="disclosure">
+      <summary>Detalle técnico</summary>
+      <div className="disclosure__content stack stack--tight">
+        <pre className="raw-json">{text}</pre>
+        <button
+          type="button"
+          className="button button--secondary button--auto button--small"
+          onClick={copy}
+        >
+          {copied ? <CheckIcon /> : <CopyIcon />}
+          {copied ? 'Copiado' : 'Copiar detalle'}
+        </button>
+      </div>
+    </details>
   )
 }
 

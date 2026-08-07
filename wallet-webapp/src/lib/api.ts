@@ -14,15 +14,40 @@ export const API_BASE_URL = (
   'https://dev-identity-dwallet.l-net.io/wallet'
 ).replace(/\/+$/, '')
 
+interface ApiErrorContext {
+  code?: number
+  /** Mensaje tal cual lo devolvió el servicio, sin normalizar. */
+  rawMessage?: string
+  /** `POST /shareverify/did:lac:…`, para identificar qué llamada falló. */
+  endpoint?: string
+}
+
 export class ApiError extends Error {
   readonly status: number
   readonly code?: number
+  readonly rawMessage?: string
+  readonly endpoint?: string
 
-  constructor(message: string, status: number, code?: number) {
+  constructor(message: string, status: number, context: ApiErrorContext = {}) {
     super(message)
     this.name = 'ApiError'
     this.status = status
-    this.code = code
+    this.code = context.code
+    this.rawMessage = context.rawMessage
+    this.endpoint = context.endpoint
+  }
+
+  /**
+   * Detalle técnico para mostrar y copiar cuando el mensaje amigable no alcanza.
+   * El prefijo `ERR_…` que devuelve el servicio suele ser lo más diagnóstico,
+   * así que acá se conserva entero.
+   */
+  get details(): string {
+    const lines = [`HTTP ${this.status}`]
+    if (this.endpoint) lines.push(this.endpoint)
+    if (typeof this.code === 'number') lines.push(`code: ${this.code}`)
+    if (this.rawMessage && this.rawMessage !== this.message) lines.push(this.rawMessage)
+    return lines.join('\n')
   }
 
   /** El token expiró o no es válido: hay que volver a iniciar sesión. */
@@ -70,6 +95,7 @@ interface RequestOptions {
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true, signal } = options
+  const endpoint = `${method} ${path}`
 
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
@@ -78,7 +104,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     const token = getAccessToken()
     if (!token) {
       handleUnauthorized()
-      throw new ApiError('Tu sesión expiró. Iniciá sesión nuevamente.', 401)
+      throw new ApiError('Tu sesión expiró. Iniciá sesión nuevamente.', 401, { endpoint })
     }
     headers.Authorization = `Bearer ${token}`
   }
@@ -93,9 +119,13 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     })
   } catch (error) {
     if (signal?.aborted) throw error
+    // Acá caen también los bloqueos por CORS y por mixed content, que el
+    // navegador reporta como un TypeError sin detalle.
+    console.error('[api] fallo de red', { endpoint, url: `${API_BASE_URL}${path}`, error })
     throw new ApiError(
       'No se pudo conectar con el servicio. Revisá tu conexión e intentá de nuevo.',
       0,
+      { endpoint, rawMessage: error instanceof Error ? error.message : String(error) },
     )
   }
 
@@ -110,11 +140,25 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      extractErrorMessage(parsed, response.status),
-      response.status,
-      isRecord(parsed) && typeof parsed.code === 'number' ? parsed.code : undefined,
-    )
+    const rawMessage =
+      isRecord(parsed) && typeof parsed.message === 'string'
+        ? parsed.message
+        : typeof parsed === 'string'
+          ? parsed
+          : undefined
+
+    // Sin esto, un fallo en el teléfono es indepurable: no hay DevTools a mano.
+    console.error('[api] respuesta de error', {
+      endpoint,
+      status: response.status,
+      body: parsed,
+    })
+
+    throw new ApiError(extractErrorMessage(parsed, response.status), response.status, {
+      code: isRecord(parsed) && typeof parsed.code === 'number' ? parsed.code : undefined,
+      rawMessage,
+      endpoint,
+    })
   }
 
   return parsed as T
@@ -134,8 +178,17 @@ function extractErrorMessage(body: unknown, status: number): string {
   if (/invalid user credentials/i.test(rawMessage)) {
     return 'Usuario o contraseña incorrectos.'
   }
+  // El servicio devuelve `ERR_CREDENTIAL_REGISTRY: The role is undefined` cuando no
+  // logra resolver el rol del usuario. Tal cual, parece un error de la app.
+  if (/role is undefined|the role is not defined/i.test(rawMessage)) {
+    return 'El servicio no pudo determinar el rol de tu usuario. Es una configuración de la cuenta en el backend, no un problema de la wallet.'
+  }
+  if (/role/i.test(rawMessage) && status === 403) {
+    return 'Tu usuario no tiene el rol necesario para esta operación.'
+  }
   if (rawMessage) {
-    // Los mensajes vienen prefijados tipo `ERR_KEYCLOAK_...: detalle`.
+    // Los mensajes vienen prefijados tipo `ERR_KEYCLOAK_...: detalle`. Se recorta
+    // para la UI, pero el original queda en `ApiError.rawMessage`.
     const withoutCode = rawMessage.replace(/^[A-Z_]+:\s*/, '')
     return withoutCode || rawMessage
   }
@@ -198,11 +251,83 @@ export async function listHolderCredentials(
   holderDid: string,
   signal?: AbortSignal,
 ): Promise<CredentialSummaryHolder[]> {
-  const result = await request<CredentialSummaryHolder[] | null>(
-    `/holder/${encodeDidSegment(holderDid)}`,
-    { signal },
-  )
-  return Array.isArray(result) ? result : []
+  const result = await request<unknown>(`/holder/${encodeDidSegment(holderDid)}`, { signal })
+  return normalizeCredentialList(result)
+}
+
+/**
+ * El OpenAPI declara `[{id, did_issuer, type}]`, pero este deployment ya demostró
+ * apartarse del spec (documenta 401 y devuelve 500). Si el `id` viniera con otro
+ * nombre, `id_vc` viajaría como `undefined` y compartir fallaría sin explicación,
+ * así que se normalizan las variantes habituales y se avisa por consola.
+ */
+function normalizeCredentialList(payload: unknown): CredentialSummaryHolder[] {
+  const items = Array.isArray(payload)
+    ? payload
+    : isRecord(payload) && Array.isArray(payload.data)
+      ? payload.data
+      : isRecord(payload) && Array.isArray(payload.credentials)
+        ? payload.credentials
+        : []
+
+  if (!Array.isArray(payload) && items.length > 0) {
+    console.warn('[api] GET /holder/{did} devolvió un objeto envolvente, no un arreglo')
+  }
+
+  const normalized: CredentialSummaryHolder[] = []
+
+  for (const item of items) {
+    if (!isRecord(item)) continue
+
+    const id = readId(item)
+    if (!id) {
+      console.warn(
+        '[api] credencial sin id utilizable; claves recibidas:',
+        Object.keys(item).join(', '),
+      )
+      continue
+    }
+    if (!('id' in item)) {
+      console.warn(`[api] el id de la credencial vino en otro campo, no en "id" (${id})`)
+    }
+
+    normalized.push({
+      id,
+      did_issuer: readString(item, ['did_issuer', 'didIssuer', 'issuer', 'did_emisor']),
+      type: readString(item, ['type', 'credentialType', 'tipo']),
+    })
+  }
+
+  return normalized
+}
+
+/** Acepta `id`, `_id` y la forma `{$oid}` que emite Mongo al serializar. */
+function readId(item: Record<string, unknown>): string | undefined {
+  for (const key of ['id', '_id', 'idVc', 'id_vc', 'vcId']) {
+    const value = item[key]
+    if (typeof value === 'string' && value.trim()) return value.trim()
+    if (isRecord(value) && typeof value.$oid === 'string') return value.$oid
+  }
+  return undefined
+}
+
+function readString(
+  item: Record<string, unknown>,
+  keys: string[],
+): string | undefined {
+  for (const key of keys) {
+    const value = item[key]
+    if (typeof value === 'string' && value.trim()) return value.trim()
+    // `type` puede llegar como el arreglo completo de tipos W3C.
+    if (Array.isArray(value)) {
+      const first = value.find(
+        (entry) => typeof entry === 'string' && entry && entry !== 'VerifiableCredential',
+      )
+      if (typeof first === 'string') return first
+    }
+    if (isRecord(value) && typeof value.id === 'string') return value.id
+  }
+  return undefined
 }
 
 export function getHolderCredential(holderDid: string, id: string, signal?: AbortSignal) {
