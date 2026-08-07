@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Early scaffold. `verifier-webapp/` is a Next.js 16 app serving a hello-world page — no identity, credential, or verification logic exists yet. The other three roles have no code at all.
+Early scaffold. `verifier-webapp/` is a Next.js 16 app with login against the Wallet API and a mock QR panel; actual credential verification is not wired up yet. The other three roles have no code at all.
 
 There is **no test framework configured** in any app; `npm run lint` and `npm run build` are currently the only verification available. Add the test command here once a runner is set up.
 
@@ -40,6 +40,14 @@ This is an examples/multi-app repository (`LNetIdentity-examples-1`). Each role-
 `verifier-webapp/` runs **Next.js 16**, which has breaking changes relative to most training data. `verifier-webapp/CLAUDE.md` is a one-line `@AGENTS.md` import, and that `AGENTS.md` is generated and re-added by `next dev` — do not hand-edit either; commit the regenerated block along with your work to keep the tree clean. Consult `verifier-webapp/node_modules/next/dist/docs/` before writing non-trivial Next.js code.
 
 Two things already differ from older conventions and are load-bearing here: layouts receive generated route types (`LayoutProps<"/">` in `app/layout.tsx`) rather than a hand-written props interface, and `next.config.ts` pins `turbopack.root` to the app directory — without it Turbopack walks up past the repo looking for a lockfile and finds a stray one in the home directory.
+
+## Wallet API
+
+`verifier-webapp/` talks to the Wallet API documented at https://dev-identity-dwallet.l-net.io/. Two things the Swagger UI hides: the OpenAPI document declares **`/wallet` as the server base path**, so `post_login` is really `POST /wallet/login`; and the spec is served from `/swagger-ui-init.js` (there is no `/openapi.json` or `/swagger.json`) — parse the `swaggerDoc` object out of that file to read it.
+
+The spec documents 401 for bad credentials, but the deployment actually returns **500** with `{"code":1,"message":"ERR_KEYCLOAK_GENERATE_TOKEN: ... Invalid user credentials"}`. Anything mapping API errors to user-facing messages has to handle both.
+
+Override the base URL with `IDENTITY_API_BASE_URL` (see `.env.example`); `lib/identity-api.ts` falls back to the dev URL.
 
 ## Git conventions
 
