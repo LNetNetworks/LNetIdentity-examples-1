@@ -46,7 +46,7 @@ export function Login() {
           <ShieldCheckIcon />
         </div>
         <div className="stack stack--tight">
-          <h1 className="page-title">Proof Identity Wallet</h1>
+          <h1 className="page-title">Wallet | Identity</h1>
           <p className="page-subtitle">
             Tus credenciales verificables, siempre con vos.
           </p>
