@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models.dart';
 import '../wallet_api.dart';
+import '../widgets/install_pwa_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key, required this.api, required this.onLoggedIn});
@@ -182,6 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           )
                         : const Text('Ingresar'),
                   ),
+                  const InstallPwaButton(),
                 ],
               ),
             ),
