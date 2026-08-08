@@ -64,6 +64,17 @@ export function CredentialDetail() {
             </section>
           )}
 
+          {/* La acción principal va antes del bloque técnico: en pantallas chicas
+              quedaba abajo de todo y había que scrollear para encontrarla. */}
+          <button
+            type="button"
+            className="button button--primary"
+            onClick={() => navigate('/scan', { state: { credentialId: id } })}
+          >
+            <ShareIcon />
+            Compartir esta credencial
+          </button>
+
           <section className="stack stack--tight">
             <h2 className="section-label">Información técnica</h2>
             <div className="panel panel--flush">
@@ -110,15 +121,6 @@ export function CredentialDetail() {
               <pre className="raw-json">{JSON.stringify(detail, null, 2)}</pre>
             </div>
           </details>
-
-          <button
-            type="button"
-            className="button button--primary"
-            onClick={() => navigate('/scan', { state: { credentialId: id } })}
-          >
-            <ShareIcon />
-            Compartir esta credencial
-          </button>
         </div>
       )}
     </AppShell>
