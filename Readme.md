@@ -12,10 +12,36 @@ trust list all live in the LNet stack; these apps are thin clients over its HTTP
 mainly the hosted **D-Wallet API** (`https://dev-identity-dwallet.l-net.io/`), which gives
 each user a custodial wallet and issues, delivers and verifies credentials on their behalf.
 
+The exercise behind it is deliberate: run one basic circuit through the entire stack, so the
+team learns it hands-on and any friction it has surfaces early enough to be written down.
+Findings belong in each app's own README, next to the code that hit them.
+
+## Environment
+
+Everything runs against the shared dev deployment; there is no local stack to stand up.
+
+| Service | Base URL |
+| --- | --- |
+| D-Wallet API | `https://dev-identity-dwallet.l-net.io/` |
+| PKD / governance API | `https://dev-identity-governance-api.l-net.io/` |
+| SSI-VC API | `https://dev-identity-api.l-net.io/` |
+| Keycloak (realm `d-wallet`) | `https://dev-auth.l-net.io/` |
+
+Network `openprotest`, RPC `https://testnet-writer1.l-net.io`. The contracts the examples verify
+against are already deployed: credential registry `0x46e50D29e8eE1BEbc025F4Ed8aDa39e0A6ab4827`,
+claims verifier `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4`.
+
+Test users (issuers and verifier) live in that Keycloak realm — this repository is public, so
+ask the team for credentials and API keys rather than looking for them here. Keep them in
+`.env.local`; every app ships an `.env.example` listing what it needs.
+
 ## The LNet identity stack
 
 The pieces the examples sit on top of. Most live in the `LNetNetworks` organization and are
-internal, so some links may not resolve without access.
+internal, so some links may not resolve without access. The three hosted services — D-Wallet,
+SSI-VC and the PKD API — are developed on GitLab under `lacnet/agroweb3`, branch `develop`, and
+mirrored to the GitHub repositories below; check the GitLab side when something in the dev
+deployment does not match the mirror.
 
 | Repository | Layer | What it provides |
 | --- | --- | --- |
@@ -72,12 +98,23 @@ Steps 1–6 are scripted end to end in
 [digital-identity-bootstrap](https://github.com/LNetNetworks/digital-identity-bootstrap), and the
 order matters: each scenario consumes the address the previous one produced.
 
+**Where this currently stands:** the PKD leg — steps 1 and 2 — is parked for now, and the
+circuit is being exercised from step 3 onwards against the already deployed registry and claims
+verifier. Membership in the trusted list is therefore assumed rather than enforced end to end;
+what actually gates issuance today is the `ISSUER_ROLE` of step 6. The three issuer identities
+and the verifier exist as Keycloak users with a D-Wallet already generated, so step 3 is done
+for them too.
+
 ### Runtime — issuance, custody, presentation, verification
 
-7. **Issue the credential** — `POST /vc`. The issuer emits a W3C verifiable credential for a subject, with its type, JSON-LD context, expiry and the trusted list it answers to. The proof is registered on-chain and the credential delivered to the holder's wallet.
+7. **Issue the credential** — `POST /vc`. The issuer emits a W3C verifiable credential for a subject DID, with its type, JSON-LD context, expiry and the trusted list it answers to, shaped by a schema published in `vc-repository` ([`test_reference.json`](https://github.com/LNetNetworks/vc-repository/blob/main/schemas/test_reference.json) is the one used for these tests). The proof is registered on-chain and the credential delivered to the holder's wallet.
 8. **Hold it** — `GET /holder/{did}`. The user (role 3) logs into the wallet and finds the credential waiting; `wallet-webapp` and `wallet-flutter-app` are two takes on this same role.
 9. **Present it** — the verification portal (role 4) displays a QR encoding its own verification URL (`GET /verifier/verification-url`). The wallet scans it, the holder chooses which credential to present, and the wallet sends the presentation (`POST /shareverify/{did}`).
-10. **Verify it** — `GET /verifier/{did}`. The portal reads the presentations it has received. The decision rests on the whole chain holding at once: a valid signature, a proof anchored and not revoked in the credential registry, and an issuer still listed in the trusted list from step 2.
+10. **Verify it** — `GET /verifier/{did}`. The portal reads the presentations it has received, and the operator picks one to verify. Two outcomes have to be told apart on screen: **valid**, and **invalid or expired**. The verdict rests on the whole chain holding at once: a valid signature, a proof anchored and not revoked in the credential registry, and an issuer still listed in the trusted list from step 2.
+
+The mirror image of step 9 — a holder scanning a QR to *request* a credential, sending their DID
+to an issuer URL that mints one back — is part of the same design but **is not implemented**, on
+either side.
 
 ## Which app solves each step
 
@@ -118,8 +155,16 @@ credentials** list with revocation (`DELETE /vc/:id`). Issuing is `POST /vc`, wh
 proof on-chain and delivers the credential to the holder's wallet — so the form needs the
 holder's DID as input, and the UI should show the on-chain hash it got back as the receipt.
 
-It only works if step 6 already ran for this issuer; a clear error when the role is missing is
-worth more here than any other validation.
+Login is the D-Wallet one (`POST /login`) with the issuer users that exist in Keycloak; the
+access token carries the issuer role, so the app never picks the issuing DID by hand. It only
+works if step 6 already ran for that issuer — a clear error when the role is missing is worth
+more here than any other validation. A QR that lets a holder *request* a credential is part of
+the design but not implemented anywhere yet.
+
+There is already a platform-side issuer front at `https://dev-identity-app.l-net.io/`. It is
+worth a look before starting: this example is meant to be the minimal version of that flow, and
+the rough edges found while using it (credential type and schema deserve dropdowns fed by the
+backend, not free text; retrieving a VC does not work) are the ones worth not repeating.
 
 ### `wallet-webapp/`, `wallet-flutter-app/` — Holder wallet · built
 
@@ -134,8 +179,9 @@ from a desktop browser defeats the point.
 The screen a verifier puts in front of a person: it logs in, requests its verification URL
 (`GET /verifier/verification-url`), renders it as a QR for the wallet to scan, and lists the
 presentations it has received (`GET /verifier/{did}`). What is still missing is the verdict
-itself — consuming the presentation and displaying whether the trust chain holds, which is what
-turns the list into an actual verification portal.
+itself — selecting one of those presentations, verifying it, and showing **valid** or **invalid
+or expired** unambiguously. That last screen is what turns the list into an actual verification
+portal, and reading a unique presentation code instead of a QR should reach the same result.
 
 ## Repository layout
 
