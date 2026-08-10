@@ -79,6 +79,64 @@ order matters: each scenario consumes the address the previous one produced.
 9. **Present it** — the verification portal (role 4) displays a QR encoding its own verification URL (`GET /verifier/verification-url`). The wallet scans it, the holder chooses which credential to present, and the wallet sends the presentation (`POST /shareverify/{did}`).
 10. **Verify it** — `GET /verifier/{did}`. The portal reads the presentations it has received. The decision rests on the whole chain holding at once: a valid signature, a proof anchored and not revoked in the credential registry, and an issuer still listed in the trusted list from step 2.
 
+## Which app solves each step
+
+Every step above belongs to exactly one app, and every app to one role. Following the
+convention of this repository, each one lives in its own top-level folder and is developed on
+a branch of the same name.
+
+| Step | App | Role | Folder / branch | Status |
+| --- | --- | --- | --- | --- |
+| 1, 2, 4, 5, 6 | Trusted list backoffice | 1 — Trusted List Manager | `trustlist-webapp/` | To build |
+| 3, 7 | Issuer backoffice | 2 — Credential Issuer | `issuer-webapp/` | To build |
+| 3, 8, 9 | Holder wallet | 3 — User | `wallet-webapp/`, `wallet-flutter-app/` | Built |
+| 9, 10 | Verification portal | 4 — Verifier | `verifier-webapp/` | Built |
+
+Until the two backoffices exist, steps 1–7 are covered headlessly by the scripts in
+`digital-identity-bootstrap` — that harness is the reference for what those UIs have to do.
+
+### `trustlist-webapp/` — Trusted List Manager backoffice · to build
+
+The governance console, and the most privileged app of the set. It should offer, in this order:
+a one-time **PKD deploy** that surfaces the resulting address; an **entities** screen listing
+who is registered in the trusted list, with register and revoke as the two write actions; and a
+**permissions** screen that deploys the credential registry and the claims verifier and grants
+`ISSUER_ROLE` to an admitted entity — the moment an organization stops being merely listed and
+becomes able to emit.
+
+It talks to the PKD API (`/pki/pkd/*`, `/pki/tl/*`) and to SSI-VC (`/registry/*`). It is the one
+app that handles an admin private key, so every call belongs on the server — server actions or
+route handlers, never a key reaching the browser. Revocation deserves a confirmation step: it
+invalidates every credential that issuer signed.
+
+### `issuer-webapp/` — Credential Issuer backoffice · to build
+
+Where a "virtual certificate" is actually minted. It needs a **login** for the issuing
+organization, a **new credential** form that picks a type from the schemas published in
+`vc-repository` and fills the subject's data, expiry and JSON-LD context, and an **issued
+credentials** list with revocation (`DELETE /vc/:id`). Issuing is `POST /vc`, which anchors the
+proof on-chain and delivers the credential to the holder's wallet — so the form needs the
+holder's DID as input, and the UI should show the on-chain hash it got back as the receipt.
+
+It only works if step 6 already ran for this issuer; a clear error when the role is missing is
+worth more here than any other validation.
+
+### `wallet-webapp/`, `wallet-flutter-app/` — Holder wallet · built
+
+Two implementations of the same role, one Vite PWA and one Flutter app, both against the same
+D-Wallet API: onboarding that creates the user's DID, the credential list (`GET /holder/{did}`)
+and detail view, the QR scanner, and the screen that picks a credential and sends the
+presentation (`POST /shareverify/{did}`). Both are installable on a phone, since scanning a QR
+from a desktop browser defeats the point.
+
+### `verifier-webapp/` — Verification portal · built
+
+The screen a verifier puts in front of a person: it logs in, requests its verification URL
+(`GET /verifier/verification-url`), renders it as a QR for the wallet to scan, and lists the
+presentations it has received (`GET /verifier/{did}`). What is still missing is the verdict
+itself — consuming the presentation and displaying whether the trust chain holds, which is what
+turns the list into an actual verification portal.
+
 ## Repository layout
 
 Each example is a self-contained app in its own top-level directory. There is no
@@ -91,7 +149,8 @@ own directory.
 | `wallet-webapp/` | 3 — User (holder) | Vite + React PWA, TypeScript |
 | `wallet-flutter-app/` | 3 — User (holder) | Flutter (web and macOS targets) |
 
-Roles 1 (Trusted List Manager) and 2 (Credential Issuer) have no example app yet.
+Roles 1 (Trusted List Manager) and 2 (Credential Issuer) have no app yet; `trustlist-webapp/`
+and `issuer-webapp/` are the folders reserved for them.
 
 ## Branches
 
@@ -99,15 +158,15 @@ One branch per example, named exactly after its directory. `main` is the default
 and the usual PR target; it integrates every example, so it is the only branch where the
 full system is present at once.
 
-| Branch | Contents | State |
+| Branch | App | State |
 | --- | --- | --- |
 | `main` | All examples, integrated | Default branch, PR target |
-| `verifier-webapp` | Verifier portal only | Merged into `main` |
-| `wallet-webapp` | Vite PWA wallet only | Merged into `main` |
-| `wallet-flutter-app` | Flutter wallet only | Ahead of `main` (web build config and PWA install button) |
+| `verifier-webapp` | Verification portal (role 4) | Merged into `main` |
+| `wallet-webapp` | Vite PWA wallet (role 3) | Merged into `main` |
+| `wallet-flutter-app` | Flutter wallet (role 3) | In sync with `main` |
 
-Each feature branch keeps only the directory it is named after, plus `Readme.md`,
-`LICENSE`, and `CLAUDE.md`; the merge into `main` is what brings the examples together.
+The two apps still to build follow the same rule: branch `trustlist-webapp` and
+`issuer-webapp` off `main`, one folder each, and merge back when they work.
 
 **Deployment caveat:** `wallet-flutter-app` is the *production* branch of its Vercel
 project, not `main`. Pushing to it deploys straight to production, with no preview step
