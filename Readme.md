@@ -33,20 +33,51 @@ The trust chain is what ties them together, and it is the core constraint every 
 inherits: a verifier accepts a credential only if its issuer is in the trust list governed
 by the trusted list manager.
 
-## Example Challenge Assignment
+## The challenge
 
-Given the following roles:
+These examples do not start from a product spec. They start from a challenge: take one
+concrete use case and solve it end to end with the LNet stack, turning its roles into running
+apps — see [Repository layout](#repository-layout) for which ones exist so far. The assignment,
+as it was handed over:
 
-- 1 - Trusted List Manager
-- 2 - Credential Issuer
-- 3 - User
-- 4 - Verifier
+> Given the following roles:
+>
+> - 1 - Trusted List Manager
+> - 2 - Credential Issuer
+> - 3 - User
+> - 4 - Verifier
+>
+> Create a decentralized identity system that allows a higher-level entity to manage the governance of a trust list, adding sub-entities that fulfill the role of credential issuers.
+>
+> These issuers will be able to generate credentials in the form of "virtual certificates," which users will receive in their wallets.
+>
+> These users will also be able to present the credentials on a verification portal that supports the reading of a QR code or a unique presentation code.
 
-Create a decentralized identity system that allows a higher-level entity to manage the governance of a trust list, adding sub-entities that fulfill the role of credential issuers. 
+## How the case is solved
 
-These issuers will be able to generate credentials in the form of "virtual certificates," which users will receive in their wallets. 
+In two phases: a **setup** that establishes governance and trust on-chain, done once by the
+trusted list manager, and a **runtime** flow that the apps in this repository act out, from
+issuance to verification.
 
-These users will also be able to present the credentials on a verification portal that supports the reading of a QR code or a unique presentation code.
+### Setup — governance and permissions
+
+1. **Deploy the PKD** — `POST /pki/pkd/deploy` on the PKD API. The root of governance, owned by the Trusted List Manager (role 1); every address downstream hangs off this one.
+2. **Deploy a trusted list and register entities in it** — `POST /pki/pkd/{pkd}/register` and the `/pki/tl/…` endpoints. This is where an organization is admitted as a credential issuer (role 2). Admission is revocable (`DELETE /pki/tl/{tl}/revoke/{entity}`), and revoking it is what later invalidates everything that issuer signed.
+3. **Create the DIDs** — each participant gets a `did:lac:<network>:<address>`, either through D-Wallet (`POST /login`, then `POST /`) or with `did-cli` / `lnet-did-js` straight against the DID Registry.
+4. **Deploy the credential registry** — `POST /registry/credentials/deploy` on SSI-VC. The contract where credential proofs are anchored and revocations recorded.
+5. **Deploy the claims verifier** — `POST /registry/verifier/deploy`, bound to that registry. It is what a verifier consults to decide whether a proof holds.
+6. **Grant the issuer permissions** — `PUT /registry/verifier/{address}/issuer`. Only addresses holding `ISSUER_ROLE` can anchor credentials; until this step the issuer is admitted but cannot emit anything.
+
+Steps 1–6 are scripted end to end in
+[digital-identity-bootstrap](https://github.com/LNetNetworks/digital-identity-bootstrap), and the
+order matters: each scenario consumes the address the previous one produced.
+
+### Runtime — issuance, custody, presentation, verification
+
+7. **Issue the credential** — `POST /vc`. The issuer emits a W3C verifiable credential for a subject, with its type, JSON-LD context, expiry and the trusted list it answers to. The proof is registered on-chain and the credential delivered to the holder's wallet.
+8. **Hold it** — `GET /holder/{did}`. The user (role 3) logs into the wallet and finds the credential waiting; `wallet-webapp` and `wallet-flutter-app` are two takes on this same role.
+9. **Present it** — the verification portal (role 4) displays a QR encoding its own verification URL (`GET /verifier/verification-url`). The wallet scans it, the holder chooses which credential to present, and the wallet sends the presentation (`POST /shareverify/{did}`).
+10. **Verify it** — `GET /verifier/{did}`. The portal reads the presentations it has received. The decision rests on the whole chain holding at once: a valid signature, a proof anchored and not revoked in the credential registry, and an issuer still listed in the trusted list from step 2.
 
 ## Repository layout
 
