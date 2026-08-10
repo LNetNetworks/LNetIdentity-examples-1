@@ -88,25 +88,24 @@ issuance to verification.
 ### Setup — governance and permissions
 
 1. **Deploy the PKD** — `POST /pki/pkd/deploy` on the PKD API. The root of governance, owned by the Trusted List Manager (role 1); every address downstream hangs off this one.
-2. **Deploy a trusted list and register entities in it** — `POST /pki/pkd/{pkd}/register` and the `/pki/tl/…` endpoints. This is where an organization is admitted as a credential issuer (role 2). Admission is revocable (`DELETE /pki/tl/{tl}/revoke/{entity}`), and revoking it is what later invalidates everything that issuer signed.
-3. **Create the DIDs** — each participant gets a `did:lac:<network>:<address>`, either through D-Wallet (`POST /login`, then `POST /`) or with `did-cli` / `lnet-did-js` straight against the DID Registry.
-4. **Deploy the credential registry** — `POST /registry/credentials/deploy` on SSI-VC. The contract where credential proofs are anchored and revocations recorded.
-5. **Deploy the claims verifier** — `POST /registry/verifier/deploy`, bound to that registry. It is what a verifier consults to decide whether a proof holds.
-6. **Grant the issuer permissions** — `PUT /registry/verifier/{address}/issuer`. Only addresses holding `ISSUER_ROLE` can anchor credentials; until this step the issuer is admitted but cannot emit anything.
+2. **Admit the entities** — `POST /pki/pkd/{pkd}/register` and the `/pki/tl/…` endpoints. This is where an organization is admitted as a credential issuer (role 2). Each admitted entity also gets its own identity here: a Keycloak user with a D-Wallet generated for it, which is what gives it a `did:lac:<network>:<address>` to sign with. Admission is revocable (`DELETE /pki/tl/{tl}/revoke/{entity}`), and revoking it is what later invalidates everything that issuer signed.
+3. **Deploy the credential registry** — `POST /registry/credentials/deploy` on SSI-VC. The contract where credential proofs are anchored and revocations recorded.
+4. **Deploy the claims verifier** — `POST /registry/verifier/deploy`, bound to that registry. It is what a verifier consults to decide whether a proof holds.
+5. **Grant the issuer permissions** — `PUT /registry/verifier/{address}/issuer`. Only addresses holding `ISSUER_ROLE` can anchor credentials; until this step the issuer is admitted but cannot emit anything.
 
-Steps 1–6 are scripted end to end in
+Steps 1–5 are scripted end to end in
 [digital-identity-bootstrap](https://github.com/LNetNetworks/digital-identity-bootstrap), and the
 order matters: each scenario consumes the address the previous one produced.
 
-**Where this currently stands:** the PKD leg — steps 1 and 2 — is parked for now, and the
-circuit is being exercised from step 3 onwards against the already deployed registry and claims
-verifier. Membership in the trusted list is therefore assumed rather than enforced end to end;
-what actually gates issuance today is the `ISSUER_ROLE` of step 6. The three issuer identities
-and the verifier exist as Keycloak users with a D-Wallet already generated, so step 3 is done
-for them too.
+**Where this currently stands:** the PKD leg — step 1 and the trusted-list half of step 2 — is
+parked for now, and the circuit is being exercised against the already deployed registry and
+claims verifier. Membership in the trusted list is therefore assumed rather than enforced end to
+end; what actually gates issuance today is the `ISSUER_ROLE` of step 5. The three issuer
+identities and the verifier already exist as Keycloak users with their D-Wallets generated.
 
-### Runtime — issuance, custody, presentation, verification
+### Runtime — onboarding, issuance, custody, presentation, verification
 
+6. **Create the holder's wallet** — the user signs up in the wallet app and D-Wallet builds their identity on the spot (`POST /`, `POST /wallet-id`, `POST /wallet-document`), yielding the `did:lac:<network>:<address>` that an issuer will later name as the subject. Unlike everything above, this happens once per user, whenever they arrive.
 7. **Issue the credential** — `POST /vc`. The issuer emits a W3C verifiable credential for a subject DID, with its type, JSON-LD context, expiry and the trusted list it answers to, shaped by a schema published in `vc-repository` ([`test_reference.json`](https://github.com/LNetNetworks/vc-repository/blob/main/schemas/test_reference.json) is the one used for these tests). The proof is registered on-chain and the credential delivered to the holder's wallet.
 8. **Hold it** — `GET /holder/{did}`. The user (role 3) logs into the wallet and finds the credential waiting; `wallet-webapp` and `wallet-flutter-app` are two takes on this same role.
 9. **Present it** — the verification portal (role 4) displays a QR encoding its own verification URL (`GET /verifier/verification-url`). The wallet scans it, the holder chooses which credential to present, and the wallet sends the presentation (`POST /shareverify/{did}`).
@@ -124,12 +123,12 @@ a branch of the same name.
 
 | Step | App | Role | Folder / branch | Status |
 | --- | --- | --- | --- | --- |
-| 1, 2, 4, 5, 6 | Trusted list backoffice | 1 — Trusted List Manager | `trustlist-webapp/` | To build |
-| 3, 7 | Issuer backoffice | 2 — Credential Issuer | `issuer-webapp/` | To build |
-| 3, 8, 9 | Holder wallet | 3 — User | `wallet-webapp/`, `wallet-flutter-app/` | Built |
+| 1–5 | Trusted list backoffice | 1 — Trusted List Manager | `trustlist-webapp/` | To build |
+| 7 | Issuer backoffice | 2 — Credential Issuer | `issuer-webapp/` | To build |
+| 6, 8, 9 | Holder wallet | 3 — User | `wallet-webapp/`, `wallet-flutter-app/` | Built |
 | 9, 10 | Verification portal | 4 — Verifier | `verifier-webapp/` | Built |
 
-Until the two backoffices exist, steps 1–7 are covered headlessly by the scripts in
+Until the two backoffices exist, steps 1–5 and 7 are covered headlessly by the scripts in
 `digital-identity-bootstrap` — that harness is the reference for what those UIs have to do.
 
 ### `trustlist-webapp/` — Trusted List Manager backoffice · to build
@@ -157,7 +156,7 @@ holder's DID as input, and the UI should show the on-chain hash it got back as t
 
 Login is the D-Wallet one (`POST /login`) with the issuer users that exist in Keycloak; the
 access token carries the issuer role, so the app never picks the issuing DID by hand. It only
-works if step 6 already ran for that issuer — a clear error when the role is missing is worth
+works if step 5 already ran for that issuer — a clear error when the role is missing is worth
 more here than any other validation. A QR that lets a holder *request* a credential is part of
 the design but not implemented anywhere yet.
 
