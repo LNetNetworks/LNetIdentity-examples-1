@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Wallet | Identity">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366f1" />
+      <stop offset="1" stop-color="#8b5cf6" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)" />
+  <path
+    fill="#ffffff"
+    d="M141.7 154.4a31.7 31.7 0 0 1 31.7-31.7h165.2a31.7 31.7 0 0 1 31.7 31.7v82.5c0 93.1-40.3 153.1-114.3 168.3-74-15.2-114.3-75.2-114.3-168.3z"
+  />
+  <path
+    fill="none"
+    stroke="#6d5df2"
+    stroke-width="30.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M208.4 256 244.9 292.5 310 219.5"
+  />
+</svg>
