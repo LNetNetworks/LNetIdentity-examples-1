@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+:root {
+  /* The app only ships a light theme. Without this, browsers apply native
+     dark-mode form-control colors (e.g. white text) on devices with a dark
+     OS preference, making input text invisible on our white cards. */
+  color-scheme: light;
+}
+
+html, body, #root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #f8fafc;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Keep content clear of iOS safe areas (notch/home indicator) in standalone mode */
+#root {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+/* Belt-and-suspenders on top of color-scheme:light: force readable colors on
+   form controls so no browser/OS default (dark mode, autofill, :invalid) can
+   make text invisible or unexpectedly colored. */
+input, select, textarea {
+  background-color: #fff;
+  color: #0f172a;
+}
+
+input:-webkit-autofill {
+  -webkit-text-fill-color: #0f172a;
+  box-shadow: 0 0 0 1000px #fff inset;
+}
+
+input:invalid, select:invalid, textarea:invalid {
+  box-shadow: none;
+}
