@@ -2,6 +2,7 @@ import { API_BASE, apiFetch } from './client';
 import type { CredentialSummary, VCDetail, VerifyResponse } from '../types';
 
 export interface IssueVCParams {
+  issuerDid: string;
   subjectDid: string;
   claimsVerifier: string;
   privateKey: string;
@@ -22,6 +23,7 @@ export interface IssueVCRequestPreview {
 
 export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPreview {
   const payload: Record<string, unknown> = {
+    did: params.issuerDid,
     claimsVerifier: params.claimsVerifier,
     subject: params.subjectDid,
     type: params.type,

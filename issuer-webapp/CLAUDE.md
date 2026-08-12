@@ -24,7 +24,7 @@ things only became clear by calling the live deployment directly:
   (idempotent get-or-create, empty body) right after login to resolve the issuer's own DID —
   don't ask the user for it or try to decode it out of the JWT, it isn't there.
 - The issuer integration sends `POST /vc` with
-  `{claimsVerifier, subject, type, context, trustedlist?, validUntil, data, privatekey,
+  `{did, claimsVerifier, subject, type, context, trustedlist?, validUntil, data, privatekey,
   mediatorKey}`. Although transmitting signing secrets is not desirable, `privatekey` and
   `mediatorKey` are currently required by the backend implementation; keep them until that
   backend contract is corrected.
