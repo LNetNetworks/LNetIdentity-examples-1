@@ -8,7 +8,7 @@ export interface IssueVCParams {
   privateKey: string;
   mediatorKey: string;
   type: string;
-  contextUrl: string;
+  context: string;
   trustedList?: string;
   validUntil: string;
   data: Record<string, unknown>;
@@ -27,7 +27,7 @@ export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPrevie
     claimsVerifier: params.claimsVerifier,
     subject: params.subjectDid,
     type: params.type,
-    context: params.contextUrl,
+    context: params.context,
     validUntil: params.validUntil,
     data: params.data,
     privatekey: params.privateKey,

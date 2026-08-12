@@ -37,7 +37,7 @@ export function IssueWizard() {
         privateKey: settings.walletPrivateKey.trim(),
         mediatorKey: settings.mediatorKey.trim(),
         type: selectedType.type,
-        contextUrl: selectedType.schemaUrl,
+        context: selectedType.schemaUrl,
         trustedList: settings.trustedList.trim() || undefined,
         validUntil: toISODateTime(expirationDate, DEFAULT_TIME),
         data: { ...formValues, id: recipientDid },

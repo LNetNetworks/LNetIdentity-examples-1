@@ -2,12 +2,14 @@ import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_BASE } from '../api/client';
+import { PasswordVisibilityButton } from '../components/PasswordVisibilityButton';
 
 export function LoginPage() {
   const { login, loading, error } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -54,16 +56,22 @@ export function LoginPage() {
           <label htmlFor="issuer-password" className="text-sm font-semibold text-slate-300">
             Contraseña
           </label>
-          <input
-            id="issuer-password"
-            type="password"
-            className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#121829]"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            autoComplete="current-password"
-            required
-          />
+          <div className="relative">
+            <input
+              id="issuer-password"
+              type={showPassword ? 'text' : 'password'}
+              className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] py-3 pl-3.5 pr-12 text-base text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#121829]"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              autoComplete="current-password"
+              required
+            />
+            <PasswordVisibilityButton
+              visible={showPassword}
+              onToggle={() => setShowPassword((visible) => !visible)}
+            />
+          </div>
         </div>
 
         {error && (

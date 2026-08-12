@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import type { WalletSettings } from '../types';
 import { getMissingSettings, getMissingSettingsMessage } from '../utils/settings';
+import { PasswordVisibilityButton } from './PasswordVisibilityButton';
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const { settings, setSettings } = useSettings();
@@ -131,23 +132,17 @@ function SecretField({
   return (
     <div className="space-y-1">
       <label className="text-sm font-semibold text-slate-400">{label}</label>
-      <div className="flex gap-2">
+      <div className="relative">
         <input
           type={visible ? 'text' : 'password'}
-          className="min-h-[50px] min-w-0 flex-1 rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#0b0f19]"
+          className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] py-3 pl-3.5 pr-12 font-mono text-sm text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#0b0f19]"
           autoCapitalize="none"
           autoCorrect="off"
           spellCheck={false}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
-        <button
-          type="button"
-          onClick={onToggleVisible}
-          className="shrink-0 rounded-xl border border-white/15 bg-white/[0.08] px-3 text-sm font-medium text-slate-300 transition hover:bg-white/[0.12]"
-        >
-          {visible ? 'Ocultar' : 'Mostrar'}
-        </button>
+        <PasswordVisibilityButton visible={visible} onToggle={onToggleVisible} />
       </div>
       <p className="text-xs leading-relaxed text-slate-500">{hint}</p>
     </div>
