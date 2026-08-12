@@ -4,14 +4,16 @@ import type { CredentialSummary, VCDetail, VerifyResponse } from '../types';
 export interface IssueVCParams {
   issuerDid: string;
   subjectDid: string;
+  type: string;
+  context: string;
+  validUntil: string;
+  data: Record<string, unknown>;
+}
+
+export interface SsiVCIssueParams extends IssueVCParams {
   claimsVerifier: string;
   privateKey: string;
   mediatorKey: string;
-  type: string;
-  context: string;
-  trustedList?: string;
-  validUntil: string;
-  data: Record<string, unknown>;
 }
 
 export interface IssueVCRequestPreview {
@@ -24,16 +26,12 @@ export interface IssueVCRequestPreview {
 export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPreview {
   const payload: Record<string, unknown> = {
     did: params.issuerDid,
-    claimsVerifier: params.claimsVerifier,
     subject: params.subjectDid,
     type: params.type,
     context: params.context,
     validUntil: params.validUntil,
     data: params.data,
-    privatekey: params.privateKey,
-    mediatorKey: params.mediatorKey,
   };
-  if (params.trustedList) payload.trustedlist = params.trustedList;
 
   return {
     endpoint: `${API_BASE}/vc`,
@@ -43,6 +41,20 @@ export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPrevie
       Authorization: 'Bearer <access-token>',
     },
     payload,
+  };
+}
+
+// Kept beside the dwallet request for a future ssi-vc integration.
+export function buildSsiVCIssuePayload(params: SsiVCIssueParams): Record<string, unknown> {
+  return {
+    claimsVerifier: params.claimsVerifier,
+    subject: params.subjectDid,
+    context: params.context,
+    validUntil: params.validUntil,
+    type: params.type,
+    data: params.data,
+    privatekey: params.privateKey,
+    mediatorKey: params.mediatorKey,
   };
 }
 

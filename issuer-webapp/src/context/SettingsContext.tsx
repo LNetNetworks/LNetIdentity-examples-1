@@ -29,7 +29,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user) return;
     const stored = localStorage.getItem(storageKey(user.username));
-    setSettingsState(stored ? JSON.parse(stored) : DEFAULT_SETTINGS);
+    setSettingsState(stored ? { ...DEFAULT_SETTINGS, ...JSON.parse(stored) } : DEFAULT_SETTINGS);
   }, [user?.username]);
 
   function setSettings(next: WalletSettings) {

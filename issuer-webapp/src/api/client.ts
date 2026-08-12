@@ -11,6 +11,17 @@ export function setAccessToken(token: string | null) {
   accessToken = token;
 }
 
+// The wallet API wraps Keycloak and reports an expired/invalid token as a 200-shaped
+// error body whose `message` is prefixed with this code (e.g. "ERR_KEYCLOAK_AUTHENTICATE:
+// An unexpected error occurred: jwt expired") rather than a distinct `code` field or a
+// clean 401 — verified live, not documented in the Swagger UI. AuthContext registers a
+// handler here so a stale token forces a re-login instead of surfacing as a raw error.
+let onUnauthorized: (() => void) | null = null;
+
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler;
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
   const endpoint = `${API_BASE}${path}`;
   const method = options.method || 'GET';
@@ -35,6 +46,8 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     const errorBody = body && typeof body === 'object'
       ? body as Record<string, unknown>
       : null;
+    const backendMessage = typeof errorBody?.message === 'string' ? errorBody.message : '';
+    if (backendMessage.startsWith('ERR_KEYCLOAK_AUTHENTICATE')) onUnauthorized?.();
     throw new APIError({
       code: errorBody?.code,
       status: res.status,

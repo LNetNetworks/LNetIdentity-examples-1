@@ -9,18 +9,11 @@ export function IssueDebugModal({
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const [showSecrets, setShowSecrets] = useState(false);
   const request = buildIssueVCRequest(params);
-  const visibleParams = showSecrets
-    ? params
-    : { ...params, privateKey: '<hidden>', mediatorKey: '<hidden>' };
-  const visiblePayload = showSecrets
-    ? request.payload
-    : { ...request.payload, privatekey: '<hidden>', mediatorKey: '<hidden>' };
   const callExample = `await fetch(${JSON.stringify(request.endpoint)}, {
   method: ${JSON.stringify(request.method)},
   headers: ${JSON.stringify(request.headers, null, 2)},
-  body: JSON.stringify(${JSON.stringify(visiblePayload, null, 2)})
+  body: JSON.stringify(${JSON.stringify(request.payload, null, 2)})
 });`;
 
   useEffect(() => {
@@ -78,21 +71,8 @@ export function IssueDebugModal({
             <dd className="text-slate-300">Bearer token (oculto)</dd>
           </dl>
 
-          <div className="flex items-center justify-between gap-3 rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3">
-            <p className="text-xs text-red-200">
-              Wallet Private Key y Mediator Key están {showSecrets ? 'visibles' : 'ocultas'}.
-            </p>
-            <button
-              type="button"
-              onClick={() => setShowSecrets((visible) => !visible)}
-              className="shrink-0 rounded-xl border border-red-300/30 bg-red-300/10 px-3 py-1.5 text-xs font-medium text-red-200 hover:bg-red-300/20"
-            >
-              {showSecrets ? 'Ocultar secretos' : 'Mostrar secretos'}
-            </button>
-          </div>
-
-          <DebugBlock title="Parámetros de emisión" value={visibleParams} />
-          <DebugBlock title="Payload enviado" value={visiblePayload} />
+          <DebugBlock title="Parámetros de emisión" value={params} />
+          <DebugBlock title="Payload enviado" value={request.payload} />
 
           <section className="space-y-2">
             <div className="flex items-center justify-between gap-3">
@@ -115,8 +95,8 @@ export function IssueDebugModal({
           </section>
 
           <p className="rounded-[10px] border border-amber-300/30 bg-amber-300/15 px-3.5 py-3 text-xs text-amber-200">
-            El access token siempre se oculta. Wallet Private Key y Encryption / Mediator Key
-            forman parte del payload: no compartas ni captures esta vista mientras estén visibles.
+            El access token siempre se oculta. La emisión actual por dwallet no envía Wallet
+            Private Key, Claims Verifier, Trusted List ni Encryption / Mediator Key.
           </p>
         </div>
       </div>

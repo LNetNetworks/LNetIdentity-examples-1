@@ -5,7 +5,7 @@ import { useDebug } from '../context/debug-context';
 import { SettingsModal } from './SettingsModal';
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const { enabled: debugEnabled, setEnabled: setDebugEnabled } = useDebug();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -13,11 +13,9 @@ export function Layout({ children }: { children: ReactNode }) {
     <div className="relative z-[1] mx-auto flex min-h-dvh w-full max-w-[520px] flex-col">
       <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0b0f19]/85 text-white backdrop-blur-xl">
         <div className="flex min-h-14 items-center justify-between gap-2 px-4 py-2">
-          <div className="min-w-0">
+          <div>
             <p className="font-semibold leading-tight">Issuer | Identity</p>
-            <p className="max-w-[48vw] truncate font-mono text-[11px] text-slate-500" title={user?.did}>
-              {user?.did}
-            </p>
+            <p className="mt-0.5 text-[11px] text-slate-500">Emisor de credenciales</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5">
@@ -61,6 +59,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <nav className="flex gap-1 px-2">
           <TabLink to="/issue">Emitir</TabLink>
           <TabLink to="/credentials">Credenciales</TabLink>
+          <TabLink to="/profile">Mi perfil</TabLink>
         </nav>
       </header>
 

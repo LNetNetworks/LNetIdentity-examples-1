@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { IssueWizard } from './pages/IssueWizard/IssueWizard';
 import { CredentialsList } from './pages/CredentialsList';
 import { CredentialDetail } from './pages/CredentialDetail';
+import { ProfilePage } from './pages/ProfilePage';
 import type { ReactNode } from 'react';
 
 function RequireAuth({ children }: { children: ReactNode }) {
@@ -31,6 +32,7 @@ function AppRoutes() {
                     <Route path="/issue" element={<IssueWizard />} />
                     <Route path="/credentials" element={<CredentialsList />} />
                     <Route path="/credentials/:id" element={<CredentialDetail />} />
+                    <Route path="/profile" element={<ProfilePage />} />
                     <Route path="*" element={<Navigate to="/issue" replace />} />
                   </Routes>
                 </Layout>

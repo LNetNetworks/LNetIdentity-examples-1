@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import type { WalletSettings } from '../types';
-import { getMissingSettings, getMissingSettingsMessage } from '../utils/settings';
 import { PasswordVisibilityButton } from './PasswordVisibilityButton';
 
 export function SettingsModal({ onClose }: { onClose: () => void }) {
@@ -9,18 +8,8 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<WalletSettings>(settings);
   const [showKey, setShowKey] = useState(false);
   const [showMediator, setShowMediator] = useState(false);
-  const [showValidationError, setShowValidationError] = useState(false);
-  const missing = getMissingSettings(form);
-  const error = showValidationError && missing.length > 0
-    ? getMissingSettingsMessage(missing)
-    : null;
 
   function save() {
-    if (missing.length > 0) {
-      setShowValidationError(true);
-      return;
-    }
-
     setSettings(form);
     onClose();
   }
@@ -31,8 +20,9 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <h2 className="text-xl font-bold tracking-tight text-slate-100">Configuración del Issuer</h2>
 
         <SecretField
+          id="wallet-private-key"
           label="Wallet Private Key"
-          hint="Private key de la wallet del issuer. Se configura una vez y se reutiliza en todas las emisiones."
+          hint="Reservada para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor."
           value={form.walletPrivateKey}
           visible={showKey}
           onToggleVisible={() => setShowKey((v) => !v)}
@@ -55,7 +45,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             onChange={(e) => setForm({ ...form, claimsVerifier: e.target.value })}
           />
           <p className="text-xs leading-relaxed text-slate-500">
-            Dirección del contrato ClaimsVerifier usado al emitir.
+            Reservado para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor.
           </p>
         </div>
 
@@ -76,24 +66,19 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             onChange={(e) => setForm({ ...form, trustedList: e.target.value })}
           />
           <p className="text-xs leading-relaxed text-slate-500">
-            Si está vacío, Trusted List no se incluye en la solicitud de emisión.
+            Reservado por compatibilidad. La emisión actual por dwallet no envía este valor.
           </p>
         </div>
 
         <SecretField
+          id="mediator-key"
           label="Encryption / Mediator Key"
-          hint="Clave usada para cifrado e intercambio de mensajes. Se configura una vez por wallet."
+          hint="Reservada para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor."
           value={form.mediatorKey}
           visible={showMediator}
           onToggleVisible={() => setShowMediator((v) => !v)}
           onChange={(v) => setForm({ ...form, mediatorKey: v })}
         />
-
-        {error && (
-          <div role="alert" className="rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 text-sm text-red-200">
-            {error}
-          </div>
-        )}
 
         <div className="flex gap-2 pt-2">
           <button
@@ -115,6 +100,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
 }
 
 function SecretField({
+  id,
   label,
   hint,
   value,
@@ -122,6 +108,7 @@ function SecretField({
   onToggleVisible,
   onChange,
 }: {
+  id: string;
   label: string;
   hint: string;
   value: string;
@@ -131,9 +118,10 @@ function SecretField({
 }) {
   return (
     <div className="space-y-1">
-      <label className="text-sm font-semibold text-slate-400">{label}</label>
+      <label htmlFor={id} className="text-sm font-semibold text-slate-400">{label}</label>
       <div className="relative">
         <input
+          id={id}
           type={visible ? 'text' : 'password'}
           className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] py-3 pl-3.5 pr-12 font-mono text-sm text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#0b0f19]"
           autoCapitalize="none"

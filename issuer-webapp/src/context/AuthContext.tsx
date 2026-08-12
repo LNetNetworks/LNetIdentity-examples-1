@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { login as apiLogin, logout as apiLogout } from '../api/auth';
-import { setAccessToken } from '../api/client';
+import { setAccessToken, setUnauthorizedHandler } from '../api/client';
 import type { AuthUser } from '../types';
 
 const STORAGE_KEY = 'vc-issuer:auth';
@@ -27,6 +27,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAccessToken(parsed.accessToken);
       setUser(parsed);
     }
+  }, []);
+
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      localStorage.removeItem(STORAGE_KEY);
+      setAccessToken(null);
+      setUser(null);
+      setError('Tu sesión expiró. Iniciá sesión nuevamente.');
+    });
+    return () => setUnauthorizedHandler(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(() => ({

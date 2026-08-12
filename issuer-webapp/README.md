@@ -24,10 +24,11 @@ No server component — a pure client SPA against the Wallet API (CORS is open t
 ## Configuration
 
 No secrets are stored in environment variables. The issuer logs in through the UI with their
-Keycloak user; the Wallet Private Key / Claims Verifier / Trusted List / Mediator Key used
-during issuance are configured from the app itself (gear icon → Settings) and persisted in
-`localStorage` per user. `VITE_IDENTITY_API_BASE_URL` (see `.env.example`) overrides the Wallet
-API base URL if you need to point at a different environment; it defaults to the dev deployment.
+Keycloak user. Wallet Private Key / Claims Verifier / Trusted List / Mediator Key settings are
+persisted in `localStorage` per user for compatibility with possible future flows, but the
+current dwallet issuance call does not send them. `VITE_IDENTITY_API_BASE_URL` (see
+`.env.example`) overrides the Wallet API base URL if you need to point at a different
+environment; it defaults to the dev deployment.
 
 ## Known issues
 
@@ -49,10 +50,10 @@ listed here per the root README's ask to log problems in the related app.
   Revoke button is present but disabled with a "not available in this environment" notice;
   `revokeVC`/`getMailbox` in `src/api/vc.ts` are written against the documented shape and just
   need the endpoint to exist.
-- **Claims Verifier address mismatch.** The Settings default is
-  `0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471`, while the root README lists
-  `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4` as already deployed. The configured value is sent
-  as `claimsVerifier` in `POST /vc`, so the correct address must be confirmed per environment.
+- **Claims Verifier address mismatch is only relevant if ssi-vc is integrated later.** The Settings
+  default is `0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471`, while the root README lists
+  `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4` as already deployed. The current dwallet
+  `POST /vc` payload does not include `claimsVerifier`.
 - **Not yet compared against the reference issuer front-end** at
   `https://dev-identity-app.l-net.io/` that the root README points to, including whether the
   backend can drive the credential type / schema dropdowns instead of the hardcoded list in
