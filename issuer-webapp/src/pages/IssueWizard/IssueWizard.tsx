@@ -7,7 +7,6 @@ import { Step4Review } from './Step4Review';
 import { fetchSchema } from '../../data/credentialTypes';
 import { defaultExpiration, toISODateTime } from '../../utils/date';
 import { issueVC, type IssueVCParams } from '../../api/vc';
-import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import type { CredentialTypeOption, JsonSchema } from '../../types';
 import { getMissingSettings, getMissingSettingsMessage } from '../../utils/settings';
@@ -16,7 +15,6 @@ const TOTAL_STEPS = 4;
 const { dateStr: DEFAULT_DATE, timeStr: DEFAULT_TIME } = defaultExpiration();
 
 export function IssueWizard() {
-  const { user } = useAuth();
   const { settings } = useSettings();
 
   const [step, setStep] = useState(1);
@@ -29,9 +27,8 @@ export function IssueWizard() {
   const [issuing, setIssuing] = useState(false);
   const [issueError, setIssueError] = useState<string | null>(null);
   const [result, setResult] = useState<{ id: string } | null>(null);
-  const issueParams: IssueVCParams | null = user && selectedType
+  const issueParams: IssueVCParams | null = selectedType
     ? {
-        issuerDid: user.did,
         subjectDid: recipientDid,
         claimsVerifier: settings.claimsVerifier.trim(),
         privateKey: settings.walletPrivateKey.trim(),
