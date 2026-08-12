@@ -49,10 +49,10 @@ listed here per the root README's ask to log problems in the related app.
   Revoke button is present but disabled with a "not available in this environment" notice;
   `revokeVC`/`getMailbox` in `src/api/vc.ts` are written against the documented shape and just
   need the endpoint to exist.
-- **Claims Verifier address mismatch.** The ticket's default (`0x2a574Fc01ccdFEa384577E8Cea6f0F8768D03aE8`,
-  used as the Settings default) differs from the one the root README lists as already deployed
-  (`0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4`). The configured value is sent as
-  `claimsVerifier` in `POST /vc`, so the correct address must be confirmed for each environment.
+- **Claims Verifier address mismatch.** The Settings default is
+  `0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471`, while the root README lists
+  `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4` as already deployed. The configured value is sent
+  as `claimsVerifier` in `POST /vc`, so the correct address must be confirmed per environment.
 - **Not yet compared against the reference issuer front-end** at
   `https://dev-identity-app.l-net.io/` that the root README points to, including whether the
   backend can drive the credential type / schema dropdowns instead of the hardcoded list in

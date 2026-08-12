@@ -12,13 +12,13 @@ export function Step3Recipient({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-900">3. Destinatario</h2>
+      <h2 className="text-xl font-bold tracking-tight text-slate-100">3. Destinatario</h2>
 
       <div className="space-y-1">
-        <label className="text-sm font-medium text-slate-700">DID del holder</label>
+        <label className="text-sm font-semibold text-slate-400">DID del holder</label>
         <input
           type="text"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-base font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#121829]"
           placeholder="did:lac:openprotest:0x..."
           autoCapitalize="none"
           autoCorrect="off"
@@ -31,7 +31,7 @@ export function Step3Recipient({
       <button
         type="button"
         onClick={() => setScanning(true)}
-        className="w-full rounded-md border border-slate-300 py-2.5 font-medium text-slate-700"
+        className="min-h-[50px] w-full rounded-[14px] border border-white/15 bg-white/[0.08] px-5 font-semibold text-slate-100 transition hover:bg-white/[0.12] active:scale-[0.985]"
       >
         Escanear QR
       </button>

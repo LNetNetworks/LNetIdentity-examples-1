@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import type { WalletSettings } from '../types';
 import { useAuth } from './AuthContext';
 
-export const DEFAULT_CLAIMS_VERIFIER = '0x2a574Fc01ccdFEa384577E8Cea6f0F8768D03aE8';
+export const DEFAULT_CLAIMS_VERIFIER = '0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471';
 
 const DEFAULT_SETTINGS: WalletSettings = {
   walletPrivateKey: '',

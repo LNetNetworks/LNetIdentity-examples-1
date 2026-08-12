@@ -36,43 +36,43 @@ export function CredentialDetail() {
     }
   }
 
-  if (loading) return <p className="text-slate-500 text-sm">Cargando…</p>;
-  if (error) return <p className="text-red-600 text-sm">{error}</p>;
+  if (loading) return <p className="py-12 text-center text-sm text-slate-400">Cargando…</p>;
+  if (error) return <pre className="whitespace-pre-wrap rounded-[10px] border border-red-400/30 bg-red-400/15 p-3.5 font-mono text-xs text-red-200">{error}</pre>;
   if (!credential) return null;
 
   return (
     <div className="space-y-4">
-      <Link to="/credentials" className="text-sm text-indigo-600">
+      <Link to="/credentials" className="text-sm font-medium text-emerald-300">
         ← Volver
       </Link>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-3">
-        <p className="text-xs font-medium text-slate-500 mb-1">Verifiable Credential</p>
-        <pre className="text-xs overflow-x-auto">{JSON.stringify(credential, null, 2)}</pre>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Verifiable Credential</p>
+        <pre className="max-h-[340px] overflow-auto rounded-[10px] border border-white/10 bg-[#080c15] p-3.5 text-xs leading-relaxed text-slate-300">{JSON.stringify(credential, null, 2)}</pre>
       </div>
 
       {verifyResult && (
-        <div className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 text-sm">
+        <div className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] text-sm">
           <ResultRow label="Válida" ok={verifyResult.validacionVc} />
           {verifyResult.trustChain !== undefined && (
             <ResultRow label="Trust chain" ok={verifyResult.trustChain} />
           )}
         </div>
       )}
-      {verifyError && <p className="text-sm text-red-600">{verifyError}</p>}
+      {verifyError && <pre className="whitespace-pre-wrap rounded-[10px] border border-red-400/30 bg-red-400/15 p-3.5 font-mono text-xs text-red-200">{verifyError}</pre>}
 
       <div className="flex gap-2">
         <button
           onClick={handleVerify}
           disabled={verifying}
-          className="flex-1 rounded-md bg-indigo-600 text-white py-2.5 font-medium disabled:opacity-60"
+          className="min-h-[50px] flex-1 rounded-[14px] bg-emerald-500 px-5 font-semibold text-white transition hover:bg-emerald-400 disabled:opacity-50"
         >
           {verifying ? 'Verificando…' : 'Verify'}
         </button>
         <button
           disabled
           title="No disponible en este ambiente"
-          className="flex-1 rounded-md border border-slate-300 py-2.5 font-medium text-slate-400 cursor-not-allowed"
+          className="min-h-[50px] flex-1 cursor-not-allowed rounded-[14px] border border-white/10 bg-white/[0.04] px-5 font-semibold text-slate-600"
         >
           Revoke
         </button>
@@ -84,8 +84,8 @@ export function CredentialDetail() {
 function ResultRow({ label, ok }: { label: string; ok: boolean }) {
   return (
     <div className="flex justify-between px-3 py-2">
-      <span className="text-slate-500">{label}</span>
-      <span className={ok ? 'text-emerald-600' : 'text-red-600'}>{ok ? 'Sí' : 'No'}</span>
+      <span className="text-slate-400">{label}</span>
+      <span className={ok ? 'text-emerald-400' : 'text-red-400'}>{ok ? 'Sí' : 'No'}</span>
     </div>
   );
 }

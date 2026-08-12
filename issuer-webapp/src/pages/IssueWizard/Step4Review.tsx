@@ -33,11 +33,11 @@ export function Step4Review({
   if (result) {
     return (
       <div className="space-y-4 text-center py-6">
-        <div className="w-14 h-14 mx-auto rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 text-2xl">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border-2 border-emerald-400/35 bg-emerald-400/15 text-2xl text-emerald-400">
           ✓
         </div>
-        <h2 className="text-lg font-semibold text-slate-900">Credential emitted successfully</h2>
-        <div className="bg-slate-100 rounded-md px-3 py-2 text-sm font-mono break-all text-left">
+        <h2 className="text-xl font-bold tracking-tight text-slate-100">Credential emitted successfully</h2>
+        <div className="break-all rounded-[10px] border border-white/10 bg-[#080c15] px-3.5 py-3 text-left font-mono text-sm text-slate-300">
           {result.id}
         </div>
         <button
@@ -46,7 +46,7 @@ export function Step4Review({
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
           }}
-          className="rounded-md bg-indigo-600 text-white px-4 py-2 font-medium"
+          className="min-h-[50px] rounded-[14px] bg-emerald-500 px-5 font-semibold text-white transition hover:bg-emerald-400"
         >
           {copied ? 'Copiado ✓' : 'Copiar Credential ID'}
         </button>
@@ -56,41 +56,44 @@ export function Step4Review({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-900">4. Emitir</h2>
+      <h2 className="text-xl font-bold tracking-tight text-slate-100">4. Emitir</h2>
 
-      <dl className="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 text-sm">
+      <dl className="divide-y divide-white/10 overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] text-sm">
         <Row label="Credential Type" value={typeLabel} />
         <Row label="Recipient DID" value={recipientDid} mono />
         <Row label="Schema" value={schemaUrl} mono />
         <Row label="Expiration Date" value={expirationISO} mono />
       </dl>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-3">
-        <p className="text-xs font-medium text-slate-500 mb-1">Datos de la credencial</p>
-        <pre className="text-xs overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
+      <div className="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Datos de la credencial</p>
+        <pre className="max-h-80 overflow-auto rounded-[10px] border border-white/10 bg-[#080c15] p-3.5 text-xs leading-relaxed text-slate-300">{JSON.stringify(data, null, 2)}</pre>
       </div>
 
       {debugEnabled && (
         <button
           type="button"
           onClick={() => setDebugModalOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-300 bg-amber-50 py-2.5 font-medium text-amber-900 hover:bg-amber-100"
+          className="flex min-h-[50px] w-full items-center justify-center gap-2 rounded-[14px] border border-amber-300/30 bg-amber-300/15 px-5 font-semibold text-amber-200 hover:bg-amber-300/20"
         >
-          <span className="rounded bg-amber-200 px-1.5 py-0.5 text-xs font-semibold">DEBUG</span>
+          <span className="rounded bg-amber-300/20 px-1.5 py-0.5 text-xs font-semibold">DEBUG</span>
           Ver llamada completa
         </button>
       )}
 
       {error && (
-        <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <pre
+          role="alert"
+          className="whitespace-pre-wrap break-words rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 font-mono text-xs leading-relaxed text-red-200"
+        >
           {error}
-        </div>
+        </pre>
       )}
 
       <button
         onClick={onEmit}
         disabled={issuing}
-        className="w-full rounded-md bg-indigo-600 text-white font-medium py-2.5 disabled:opacity-60"
+        className="min-h-[50px] w-full rounded-[14px] bg-emerald-500 px-5 font-semibold text-white shadow-[0_10px_24px_-14px_#10b981] transition hover:bg-emerald-400 active:scale-[0.985] disabled:opacity-50"
       >
         {issuing ? 'Emitiendo…' : 'Emit Credential'}
       </button>
@@ -104,9 +107,9 @@ export function Step4Review({
 
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
-    <div className="flex justify-between gap-3 px-3 py-2">
-      <dt className="text-slate-500 shrink-0">{label}</dt>
-      <dd className={`text-right text-slate-900 break-all ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
+    <div className="flex justify-between gap-3 px-4 py-3">
+      <dt className="shrink-0 text-slate-500">{label}</dt>
+      <dd className={`break-all text-right text-slate-100 ${mono ? 'font-mono text-xs' : ''}`}>{value}</dd>
     </div>
   );
 }

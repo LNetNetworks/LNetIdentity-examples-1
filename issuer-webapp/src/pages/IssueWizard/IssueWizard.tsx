@@ -81,7 +81,7 @@ export function IssueWizard() {
       const res = await issueVC(issueParams);
       setResult(res);
     } catch (e) {
-      setIssueError(e instanceof Error ? e.message : 'No se pudo emitir la credencial');
+      setIssueError(e instanceof Error ? e.message : String(e));
     } finally {
       setIssuing(false);
     }
@@ -130,7 +130,7 @@ export function IssueWizard() {
           {step > 1 && (
             <button
               onClick={() => setStep((s) => s - 1)}
-              className="flex-1 rounded-md border border-slate-300 py-2.5 font-medium text-slate-700"
+              className="min-h-[50px] flex-1 rounded-[14px] border border-white/15 bg-white/[0.08] px-5 font-semibold text-slate-100 transition hover:bg-white/[0.12] active:scale-[0.985]"
             >
               Atrás
             </button>
@@ -139,7 +139,7 @@ export function IssueWizard() {
             <button
               onClick={() => setStep((s) => s + 1)}
               disabled={!canAdvance}
-              className="flex-1 rounded-md bg-indigo-600 text-white py-2.5 font-medium disabled:opacity-60"
+              className="min-h-[50px] flex-1 rounded-[14px] bg-emerald-500 px-5 font-semibold text-white shadow-[0_10px_24px_-14px_#10b981] transition hover:bg-emerald-400 active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-50"
             >
               Siguiente
             </button>
@@ -150,7 +150,7 @@ export function IssueWizard() {
       {result && (
         <button
           onClick={resetWizard}
-          className="w-full rounded-md border border-slate-300 py-2.5 font-medium text-slate-700"
+          className="min-h-[50px] w-full rounded-[14px] border border-white/15 bg-white/[0.08] px-5 font-semibold text-slate-100 transition hover:bg-white/[0.12] active:scale-[0.985]"
         >
           Emitir otra credencial
         </button>

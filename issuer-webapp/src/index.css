@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  /* The app only ships a light theme. Without this, browsers apply native
-     dark-mode form-control colors (e.g. white text) on devices with a dark
-     OS preference, making input text invisible on our white cards. */
-  color-scheme: light;
+  --issuer-bg: #0b0f19;
+  --issuer-bg-elevated: #121829;
+  --issuer-surface: rgb(255 255 255 / 0.045);
+  --issuer-border: rgb(255 255 255 / 0.09);
+  --issuer-text: #f1f5f9;
+  --issuer-muted: #93a1b8;
+  --issuer-faint: #64748b;
+  --issuer-accent: #10b981;
+  color-scheme: dark;
 }
 
 html, body, #root {
@@ -13,9 +18,23 @@ html, body, #root {
 
 body {
   margin: 0;
-  background: #f8fafc;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: var(--issuer-bg);
+  color: var(--issuer-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(70% 45% at 50% -8%, rgb(16 185 129 / 0.2), transparent 70%),
+    radial-gradient(50% 35% at 100% 0%, rgb(20 184 166 / 0.1), transparent 70%);
+  pointer-events: none;
 }
 
 /* Keep content clear of iOS safe areas (notch/home indicator) in standalone mode */
@@ -28,19 +47,33 @@ input, select, textarea, button {
   font-family: inherit;
 }
 
-/* Belt-and-suspenders on top of color-scheme:light: force readable colors on
-   form controls so no browser/OS default (dark mode, autofill, :invalid) can
-   make text invisible or unexpectedly colored. */
 input, select, textarea {
-  background-color: #fff;
-  color: #0f172a;
+  background-color: var(--issuer-surface);
+  color: var(--issuer-text);
 }
 
 input:-webkit-autofill {
-  -webkit-text-fill-color: #0f172a;
-  box-shadow: 0 0 0 1000px #fff inset;
+  -webkit-text-fill-color: var(--issuer-text);
+  caret-color: var(--issuer-text);
+  box-shadow: 0 0 0 1000px var(--issuer-bg-elevated) inset;
+}
+
+.issuer-login input:-webkit-autofill {
+  -webkit-text-fill-color: var(--issuer-text);
+  caret-color: var(--issuer-text);
+  box-shadow: 0 0 0 1000px var(--issuer-bg-elevated) inset;
 }
 
 input:invalid, select:invalid, textarea:invalid {
   box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }

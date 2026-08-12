@@ -10,56 +10,61 @@ export function Layout({ children }: { children: ReactNode }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50">
-      <header className="sticky top-0 z-10 bg-indigo-600 text-white shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3">
+    <div className="relative z-[1] mx-auto flex min-h-dvh w-full max-w-[520px] flex-col">
+      <header className="sticky top-0 z-10 border-b border-white/10 bg-[#0b0f19]/85 text-white backdrop-blur-xl">
+        <div className="flex min-h-14 items-center justify-between gap-2 px-4 py-2">
           <div className="min-w-0">
-            <p className="font-semibold leading-tight">VC Issuer</p>
-            <p className="text-xs text-indigo-100 truncate max-w-[60vw]" title={user?.did}>
+            <p className="font-semibold leading-tight">Issuer | Identity</p>
+            <p className="max-w-[48vw] truncate font-mono text-[11px] text-slate-500" title={user?.did}>
               {user?.did}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              role="switch"
-              aria-checked={debugEnabled}
-              onClick={() => setDebugEnabled(!debugEnabled)}
-              className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
-                debugEnabled
-                  ? 'bg-amber-300 text-amber-950'
-                  : 'bg-indigo-500 text-indigo-100 hover:bg-indigo-400'
-              }`}
-              title={debugEnabled ? 'Desactivar modo Debug' : 'Activar modo Debug'}
-            >
-              <span
-                aria-hidden="true"
-                className={`h-2 w-2 rounded-full ${debugEnabled ? 'bg-amber-700' : 'bg-indigo-200'}`}
-              />
-              Debug
-            </button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-medium text-slate-400">Debug</span>
+              <button
+                type="button"
+                role="switch"
+                aria-label="Modo Debug"
+                aria-checked={debugEnabled}
+                onClick={() => setDebugEnabled(!debugEnabled)}
+                className={`relative h-6 w-11 shrink-0 rounded-full border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                  debugEnabled
+                    ? 'border-emerald-400 bg-emerald-500'
+                    : 'border-white/15 bg-white/10'
+                }`}
+                title={debugEnabled ? 'Desactivar modo Debug' : 'Activar modo Debug'}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                    debugEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
             <button
               aria-label="Configuración"
               onClick={() => setSettingsOpen(true)}
-              className="p-2 rounded-full hover:bg-indigo-500 active:bg-indigo-700"
+              className="grid h-10 w-10 place-items-center rounded-xl text-slate-300 transition hover:bg-white/10 hover:text-white"
             >
               <GearIcon />
             </button>
             <button
               onClick={() => logout()}
-              className="text-sm px-3 py-1.5 rounded-md bg-indigo-500 hover:bg-indigo-400 active:bg-indigo-700"
+              className="min-h-10 rounded-xl border border-white/10 bg-white/[0.06] px-3 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
             >
               Salir
             </button>
           </div>
         </div>
-        <nav className="flex px-2 gap-1 bg-indigo-700/40">
+        <nav className="flex gap-1 px-2">
           <TabLink to="/issue">Emitir</TabLink>
           <TabLink to="/credentials">Credenciales</TabLink>
         </nav>
       </header>
 
-      <main className="flex-1 px-4 py-4 max-w-2xl w-full mx-auto">{children}</main>
+      <main className="w-full flex-1 px-4 py-5">{children}</main>
 
       {settingsOpen && <SettingsModal onClose={() => setSettingsOpen(false)} />}
     </div>
@@ -71,8 +76,8 @@ function TabLink({ to, children }: { to: string; children: ReactNode }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `px-4 py-2 text-sm font-medium rounded-t-md ${
-          isActive ? 'bg-slate-50 text-indigo-700' : 'text-indigo-100'
+        `border-b-2 px-4 py-2.5 text-sm font-medium transition ${
+          isActive ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-slate-500'
         }`
       }
     >

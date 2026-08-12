@@ -16,13 +16,13 @@ export function Step2FillData({
 }) {
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-semibold text-slate-900">2. Datos de la credencial</h2>
+      <h2 className="text-xl font-bold tracking-tight text-slate-100">2. Datos de la credencial</h2>
       <DynamicForm schema={schema} values={values} onChange={onValuesChange} skipField="id" />
       <div className="space-y-1">
-        <label className="text-sm font-medium text-slate-700">Expiration Date</label>
+        <label className="text-sm font-semibold text-slate-400">Expiration Date</label>
         <input
           type="date"
-          className="w-full rounded-md border border-slate-300 px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 text-base text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#121829]"
           value={expirationDate}
           onChange={(e) => onExpirationDateChange(e.target.value)}
         />

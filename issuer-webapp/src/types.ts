@@ -64,12 +64,46 @@ export interface VerifyResponse {
 }
 
 export class APIError extends Error {
-  code?: number;
-  status?: number;
-  constructor(message: string, code?: number, status?: number) {
-    super(message);
+  code?: unknown;
+  status: number;
+  statusText: string;
+  method: string;
+  endpoint: string;
+  response: unknown;
+
+  constructor({
+    code,
+    status,
+    statusText,
+    method,
+    endpoint,
+    response,
+  }: {
+    code?: unknown;
+    status: number;
+    statusText: string;
+    method: string;
+    endpoint: string;
+    response: unknown;
+  }) {
+    const statusLine = `HTTP ${status}${statusText ? ` ${statusText}` : ''}`;
+    const codeLine = code === undefined ? [] : [`Code: ${String(code)}`];
+    const responseText = typeof response === 'string'
+      ? response
+      : JSON.stringify(response, null, 2);
+
+    super([
+      `${method} ${endpoint}`,
+      statusLine,
+      ...codeLine,
+      `Response:\n${responseText}`,
+    ].join('\n'));
     this.name = 'APIError';
     this.code = code;
     this.status = status;
+    this.statusText = statusText;
+    this.method = method;
+    this.endpoint = endpoint;
+    this.response = response;
   }
 }

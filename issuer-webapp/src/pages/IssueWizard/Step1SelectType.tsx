@@ -10,20 +10,20 @@ export function Step1SelectType({
 }) {
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-semibold text-slate-900">1. Tipo de credencial</h2>
+      <h2 className="text-xl font-bold tracking-tight text-slate-100">1. Tipo de credencial</h2>
       <div className="grid gap-2">
         {CREDENTIAL_TYPES.map((option) => (
           <button
             key={option.type}
             onClick={() => onSelect(option)}
-            className={`text-left px-4 py-3 rounded-lg border ${
+            className={`rounded-2xl border px-4 py-3.5 text-left transition active:scale-[0.985] ${
               selected?.type === option.type
-                ? 'border-indigo-600 bg-indigo-50'
-                : 'border-slate-200 bg-white'
+                ? 'border-emerald-400/40 bg-emerald-400/15'
+                : 'border-white/10 bg-white/[0.045] hover:bg-white/[0.08]'
             }`}
           >
-            <p className="font-medium text-slate-900">{option.label}</p>
-            <p className="text-xs text-slate-500">{option.schemaUrl.split('/').pop()}</p>
+            <p className="font-semibold text-slate-100">{option.label}</p>
+            <p className="mt-1 font-mono text-xs text-slate-500">{option.schemaUrl.split('/').pop()}</p>
           </button>
         ))}
       </div>

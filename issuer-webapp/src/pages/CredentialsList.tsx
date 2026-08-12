@@ -18,9 +18,9 @@ export function CredentialsList() {
       .finally(() => setLoading(false));
   }, [user?.did]);
 
-  if (loading) return <p className="text-slate-500 text-sm">Cargando…</p>;
-  if (error) return <p className="text-red-600 text-sm">{error}</p>;
-  if (items.length === 0) return <p className="text-slate-500 text-sm">Todavía no emitiste credenciales.</p>;
+  if (loading) return <p className="py-12 text-center text-sm text-slate-400">Cargando…</p>;
+  if (error) return <pre className="whitespace-pre-wrap rounded-[10px] border border-red-400/30 bg-red-400/15 p-3.5 font-mono text-xs text-red-200">{error}</pre>;
+  if (items.length === 0) return <p className="py-12 text-center text-sm text-slate-400">Todavía no emitiste credenciales.</p>;
 
   return (
     <ul className="space-y-2">
@@ -28,11 +28,11 @@ export function CredentialsList() {
         <li key={item.id}>
           <Link
             to={`/credentials/${encodeURIComponent(item.id)}`}
-            className="block bg-white rounded-lg border border-slate-200 px-4 py-3"
+            className="block rounded-2xl border border-white/10 bg-white/[0.045] px-4 py-3.5 transition hover:bg-white/[0.08] active:scale-[0.985]"
           >
-            <p className="font-medium text-slate-900">{item.type}</p>
-            <p className="text-xs text-slate-500 font-mono truncate">{item.did_holder}</p>
-            <p className="text-xs text-slate-400 font-mono truncate">{item.id}</p>
+            <p className="font-semibold text-slate-100">{item.type}</p>
+            <p className="mt-1 truncate font-mono text-xs text-slate-400">{item.did_holder}</p>
+            <p className="truncate font-mono text-xs text-slate-600">{item.id}</p>
           </Link>
         </li>
       ))}

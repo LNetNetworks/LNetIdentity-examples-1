@@ -32,14 +32,14 @@ export function QRScanner({ onScan, onClose }: QRScannerProps) {
   }, [onScan]);
 
   return (
-    <div className="fixed inset-0 z-20 bg-black/90 flex flex-col items-center justify-center p-4">
-      <div className="relative w-full max-w-sm aspect-square rounded-lg overflow-hidden bg-black">
+    <div className="fixed inset-0 z-20 flex flex-col items-center justify-center bg-black/90 p-4 backdrop-blur-sm">
+      <div className="relative aspect-square w-full max-w-sm overflow-hidden rounded-[22px] border border-white/10 bg-black">
         <video ref={videoRef} className="w-full h-full object-cover" muted playsInline />
       </div>
       {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
       <button
         onClick={onClose}
-        className="mt-4 px-4 py-2 rounded-md bg-white text-slate-900 font-medium"
+        className="mt-4 min-h-[50px] rounded-[14px] border border-white/15 bg-white/[0.08] px-5 font-semibold text-slate-100 hover:bg-white/[0.12]"
       >
         Cancelar
       </button>

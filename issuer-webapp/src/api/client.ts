@@ -12,19 +12,37 @@ export function setAccessToken(token: string | null) {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const endpoint = `${API_BASE}${path}`;
+  const method = options.method || 'GET';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   };
   if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+  const res = await fetch(endpoint, { ...options, headers });
   const text = await res.text();
-  const body = text ? JSON.parse(text) : null;
+  let body: unknown = null;
+  if (text) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = text;
+    }
+  }
 
   if (!res.ok) {
-    const message = body?.message || `Request failed with status ${res.status}`;
-    throw new APIError(message, body?.code, res.status);
+    const errorBody = body && typeof body === 'object'
+      ? body as Record<string, unknown>
+      : null;
+    throw new APIError({
+      code: errorBody?.code,
+      status: res.status,
+      statusText: res.statusText,
+      method,
+      endpoint,
+      response: body,
+    });
   }
   return body as T;
 }
