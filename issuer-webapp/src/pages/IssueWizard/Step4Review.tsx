@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import type { IssueVCParams } from '../../api/vc';
+import { IssueDebugModal } from '../../components/IssueDebugModal';
+import { useDebug } from '../../context/debug-context';
 
 export function Step4Review({
   typeLabel,
@@ -6,6 +9,7 @@ export function Step4Review({
   schemaUrl,
   expirationISO,
   data,
+  issueParams,
   issuing,
   error,
   result,
@@ -16,12 +20,15 @@ export function Step4Review({
   schemaUrl: string;
   expirationISO: string;
   data: Record<string, unknown>;
+  issueParams: IssueVCParams;
   issuing: boolean;
   error: string | null;
   result: { id: string } | null;
   onEmit: () => void;
 }) {
   const [copied, setCopied] = useState(false);
+  const [debugModalOpen, setDebugModalOpen] = useState(false);
+  const { enabled: debugEnabled } = useDebug();
 
   if (result) {
     return (
@@ -63,7 +70,22 @@ export function Step4Review({
         <pre className="text-xs overflow-x-auto">{JSON.stringify(data, null, 2)}</pre>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {debugEnabled && (
+        <button
+          type="button"
+          onClick={() => setDebugModalOpen(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-amber-300 bg-amber-50 py-2.5 font-medium text-amber-900 hover:bg-amber-100"
+        >
+          <span className="rounded bg-amber-200 px-1.5 py-0.5 text-xs font-semibold">DEBUG</span>
+          Ver llamada completa
+        </button>
+      )}
+
+      {error && (
+        <div role="alert" className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+          {error}
+        </div>
+      )}
 
       <button
         onClick={onEmit}
@@ -72,6 +94,10 @@ export function Step4Review({
       >
         {issuing ? 'Emitiendo…' : 'Emit Credential'}
       </button>
+
+      {debugEnabled && debugModalOpen && (
+        <IssueDebugModal params={issueParams} onClose={() => setDebugModalOpen(false)} />
+      )}
     </div>
   );
 }

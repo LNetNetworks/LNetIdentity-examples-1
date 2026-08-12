@@ -1,9 +1,12 @@
-import { apiFetch } from './client';
+import { API_BASE, apiFetch } from './client';
 import type { CredentialSummary, VCDetail, VerifyResponse } from '../types';
 
 export interface IssueVCParams {
   issuerDid: string;
   subjectDid: string;
+  claimsVerifier: string;
+  privateKey: string;
+  mediatorKey: string;
   type: string;
   contextUrl: string;
   trustedList?: string;
@@ -11,18 +14,45 @@ export interface IssueVCParams {
   data: Record<string, unknown>;
 }
 
-export async function issueVC(params: IssueVCParams): Promise<{ id: string }> {
-  const body: Record<string, unknown> = {
+export interface IssueVCRequestPreview {
+  endpoint: string;
+  method: 'POST';
+  headers: Record<string, string>;
+  payload: Record<string, unknown>;
+}
+
+export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPreview {
+  const payload: Record<string, unknown> = {
     did: params.issuerDid,
+    claimsVerifier: params.claimsVerifier,
     subject: params.subjectDid,
     type: params.type,
     context: params.contextUrl,
     validUntil: params.validUntil,
     data: params.data,
+    privatekey: params.privateKey,
+    mediatorKey: params.mediatorKey,
   };
-  if (params.trustedList) body.trustedlist = params.trustedList;
+  if (params.trustedList) payload.trustedlist = params.trustedList;
 
-  return apiFetch<{ id: string }>('/vc', { method: 'POST', body: JSON.stringify(body) });
+  return {
+    endpoint: `${API_BASE}/vc`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer <access-token>',
+    },
+    payload,
+  };
+}
+
+export async function issueVC(params: IssueVCParams): Promise<{ id: string }> {
+  const request = buildIssueVCRequest(params);
+
+  return apiFetch<{ id: string }>('/vc', {
+    method: request.method,
+    body: JSON.stringify(request.payload),
+  });
 }
 
 export async function listCredentials(issuerDid: string): Promise<CredentialSummary[]> {

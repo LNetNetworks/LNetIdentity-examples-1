@@ -22,7 +22,7 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4">
       <form onSubmit={handleSubmit} className="w-full max-w-sm bg-white rounded-xl shadow-sm p-6 space-y-4">
         <div className="text-center space-y-1">
-          <h1 className="text-xl font-semibold text-slate-900">VC Issuer</h1>
+          <h1 className="text-xl font-semibold text-slate-900">Issuer | Identity</h1>
           <p className="text-sm text-slate-500">Emisión y gestión de credenciales verificables</p>
         </div>
 

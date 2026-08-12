@@ -23,9 +23,11 @@ things only became clear by calling the live deployment directly:
 - `/login` returns a raw Keycloak token with no DID. `src/api/auth.ts` calls `POST /wallet-id`
   (idempotent get-or-create, empty body) right after login to resolve the issuer's own DID —
   don't ask the user for it or try to decode it out of the JWT, it isn't there.
-- The real `POST /vc` DTO is `{did, subject, type, context, trustedlist?, validUntil, data}` —
-  no `privatekey`/`mediatorKey`/`claimsVerifier`/`signature` fields exist on it, despite the
-  ticket's example payload. The backend signs server-side from the authenticated session.
+- The issuer integration sends `POST /vc` with
+  `{did, claimsVerifier, subject, type, context, trustedlist?, validUntil, data, privatekey,
+  mediatorKey}`. Although transmitting signing secrets is not desirable, `privatekey` and
+  `mediatorKey` are currently required by the backend implementation; keep them until that
+  backend contract is corrected.
 - `context` is dereferenced server-side as JSON-LD, not just stored — pointing it at a plain
   JSON Schema URL that 404s (or isn't valid JSON-LD) fails issuance with `ERR_SCHEMA_INVALID`.
   This is expected right now for 3 of the 4 ticket schema types (see README).

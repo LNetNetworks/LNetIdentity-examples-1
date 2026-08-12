@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useDebug } from '../context/debug-context';
 import { SettingsModal } from './SettingsModal';
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
+  const { enabled: debugEnabled, setEnabled: setDebugEnabled } = useDebug();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
@@ -18,6 +20,24 @@ export function Layout({ children }: { children: ReactNode }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={debugEnabled}
+              onClick={() => setDebugEnabled(!debugEnabled)}
+              className={`flex items-center gap-1.5 rounded-md px-2 py-1.5 text-xs font-semibold transition-colors ${
+                debugEnabled
+                  ? 'bg-amber-300 text-amber-950'
+                  : 'bg-indigo-500 text-indigo-100 hover:bg-indigo-400'
+              }`}
+              title={debugEnabled ? 'Desactivar modo Debug' : 'Activar modo Debug'}
+            >
+              <span
+                aria-hidden="true"
+                className={`h-2 w-2 rounded-full ${debugEnabled ? 'bg-amber-700' : 'bg-indigo-200'}`}
+              />
+              Debug
+            </button>
             <button
               aria-label="Configuración"
               onClick={() => setSettingsOpen(true)}

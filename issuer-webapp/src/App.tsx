@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SettingsProvider } from './context/SettingsContext';
+import { DebugProvider } from './context/DebugContext';
 import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { IssueWizard } from './pages/IssueWizard/IssueWizard';
@@ -23,16 +24,18 @@ function AppRoutes() {
         path="/*"
         element={
           <RequireAuth>
-            <SettingsProvider>
-              <Layout>
-                <Routes>
-                  <Route path="/issue" element={<IssueWizard />} />
-                  <Route path="/credentials" element={<CredentialsList />} />
-                  <Route path="/credentials/:id" element={<CredentialDetail />} />
-                  <Route path="*" element={<Navigate to="/issue" replace />} />
-                </Routes>
-              </Layout>
-            </SettingsProvider>
+            <DebugProvider>
+              <SettingsProvider>
+                <Layout>
+                  <Routes>
+                    <Route path="/issue" element={<IssueWizard />} />
+                    <Route path="/credentials" element={<CredentialsList />} />
+                    <Route path="/credentials/:id" element={<CredentialDetail />} />
+                    <Route path="*" element={<Navigate to="/issue" replace />} />
+                  </Routes>
+                </Layout>
+              </SettingsProvider>
+            </DebugProvider>
           </RequireAuth>
         }
       />

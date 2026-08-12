@@ -6,10 +6,11 @@ import { Step3Recipient } from './Step3Recipient';
 import { Step4Review } from './Step4Review';
 import { fetchSchema } from '../../data/credentialTypes';
 import { defaultExpiration, toISODateTime } from '../../utils/date';
-import { issueVC } from '../../api/vc';
+import { issueVC, type IssueVCParams } from '../../api/vc';
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import type { CredentialTypeOption, JsonSchema } from '../../types';
+import { getMissingSettings, getMissingSettingsMessage } from '../../utils/settings';
 
 const TOTAL_STEPS = 4;
 const { dateStr: DEFAULT_DATE, timeStr: DEFAULT_TIME } = defaultExpiration();
@@ -28,6 +29,20 @@ export function IssueWizard() {
   const [issuing, setIssuing] = useState(false);
   const [issueError, setIssueError] = useState<string | null>(null);
   const [result, setResult] = useState<{ id: string } | null>(null);
+  const issueParams: IssueVCParams | null = user && selectedType
+    ? {
+        issuerDid: user.did,
+        subjectDid: recipientDid,
+        claimsVerifier: settings.claimsVerifier.trim(),
+        privateKey: settings.walletPrivateKey.trim(),
+        mediatorKey: settings.mediatorKey.trim(),
+        type: selectedType.type,
+        contextUrl: selectedType.schemaUrl,
+        trustedList: settings.trustedList.trim() || undefined,
+        validUntil: toISODateTime(expirationDate, DEFAULT_TIME),
+        data: { ...formValues, id: recipientDid },
+      }
+    : null;
 
   async function selectType(option: CredentialTypeOption) {
     setSelectedType(option);
@@ -52,20 +67,18 @@ export function IssueWizard() {
   }
 
   async function emit() {
-    if (!user || !selectedType) return;
+    if (!issueParams) return;
+
+    const missing = getMissingSettings(settings);
+    if (missing.length > 0) {
+      setIssueError(getMissingSettingsMessage(missing));
+      return;
+    }
+
     setIssuing(true);
     setIssueError(null);
     try {
-      const data = { ...formValues, id: recipientDid };
-      const res = await issueVC({
-        issuerDid: user.did,
-        subjectDid: recipientDid,
-        type: selectedType.type,
-        contextUrl: selectedType.schemaUrl,
-        trustedList: settings.trustedList || undefined,
-        validUntil: toISODateTime(expirationDate, DEFAULT_TIME),
-        data,
-      });
+      const res = await issueVC(issueParams);
       setResult(res);
     } catch (e) {
       setIssueError(e instanceof Error ? e.message : 'No se pudo emitir la credencial');
@@ -97,13 +110,14 @@ export function IssueWizard() {
 
       {step === 3 && <Step3Recipient did={recipientDid} onDidChange={setRecipientDid} />}
 
-      {step === 4 && selectedType && (
+      {step === 4 && selectedType && issueParams && (
         <Step4Review
           typeLabel={selectedType.label}
           recipientDid={recipientDid}
           schemaUrl={selectedType.schemaUrl}
           expirationISO={toISODateTime(expirationDate, DEFAULT_TIME)}
           data={{ ...formValues, id: recipientDid }}
+          issueParams={issueParams}
           issuing={issuing}
           error={issueError}
           result={result}
