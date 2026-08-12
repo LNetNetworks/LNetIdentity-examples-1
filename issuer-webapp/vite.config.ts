@@ -9,13 +9,13 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/favicon-32.png', 'icons/apple-touch-icon.png'],
+      includeAssets: ['icons/favicon.svg', 'icons/apple-touch-icon.png'],
       manifest: {
         name: 'VC Issuer - D-Wallets',
         short_name: 'VC Issuer',
         description: 'Emisión y gestión de Verifiable Credentials sobre D-Wallets',
-        theme_color: '#4f46e5',
-        background_color: '#ffffff',
+        theme_color: '#10b981',
+        background_color: '#0b0f19',
         display: 'standalone',
         start_url: '/',
         scope: '/',
