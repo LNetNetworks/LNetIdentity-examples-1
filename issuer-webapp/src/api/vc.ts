@@ -62,6 +62,7 @@ export function buildIssueVCRequest(
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer <access-token>',
+      ...(backend === 'ssi-vc' && settings?.ssiVcApiKey ? { apikey: '<api-key>' } : {}),
     },
     payload,
   };
@@ -86,6 +87,9 @@ export async function issueVC(params: IssueVCParams, settings?: WalletSettings):
 
   return apiFetch<{ id: string }>('/vc', {
     method: request.method,
+    headers: request.backend === 'ssi-vc' && settings?.ssiVcApiKey
+      ? { apikey: settings.ssiVcApiKey }
+      : undefined,
     body: JSON.stringify(request.payload),
   }, request.apiBaseUrl);
 }

@@ -11,6 +11,7 @@ export interface WalletSettings {
   activeBackend: WalletBackend;
   dwalletApiBaseUrl: string;
   ssiVcApiBaseUrl: string;
+  ssiVcApiKey: string;
   walletPrivateKey: string;
   claimsVerifier: string;
   trustedList: string;

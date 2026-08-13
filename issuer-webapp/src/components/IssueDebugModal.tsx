@@ -100,9 +100,9 @@ export function IssueDebugModal({
           </section>
 
           <p className="rounded-[10px] border border-amber-300/30 bg-amber-300/15 px-3.5 py-3 text-xs text-amber-200">
-            El access token siempre se oculta. Dwallet no envía Wallet Private Key, Claims
-            Verifier, Trusted List ni Encryption / Mediator Key; ssi-vc usa los campos requeridos
-            por su payload.
+            El access token y la API Key siempre se ocultan. Dwallet no envía Wallet Private Key,
+            Claims Verifier, Trusted List ni Encryption / Mediator Key; ssi-vc usa los campos
+            requeridos por su payload.
           </p>
         </div>
       </div>

@@ -26,8 +26,9 @@ No server component — a pure client SPA against the Wallet API (CORS is open t
 No secrets are stored in environment variables. The issuer logs in through the UI with their
 Keycloak user. The app defaults to `dwallet`, but each user can choose `dwallet` or `ssi-vc` from
 Settings and persist separate API base URLs for both backends in `localStorage`. Wallet Private
-Key / Claims Verifier / Trusted List / Mediator Key settings are also persisted per user; the
-current `dwallet` issuance call does not send them, while `ssi-vc` uses its legacy payload shape.
+Key / Claims Verifier / Trusted List / Mediator Key / ssi-vc API Key settings are also persisted
+per user; the current `dwallet` issuance call does not send them, while `ssi-vc` uses its legacy
+payload shape and sends the configured API Key in the `apikey` header.
 `VITE_IDENTITY_API_BASE_URL` and `VITE_SSI_VC_API_BASE_URL` (see `.env.example`) only define the
 initial defaults shown in Settings.
 
@@ -51,10 +52,9 @@ listed here per the root README's ask to log problems in the related app.
   Revoke button is present but disabled with a "not available in this environment" notice;
   `revokeVC`/`getMailbox` in `src/api/vc.ts` are written against the documented shape and just
   need the endpoint to exist.
-- **Claims Verifier address mismatch is only relevant if ssi-vc is integrated later.** The Settings
-  default is `0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471`, while the root README lists
-  `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4` as already deployed. The current dwallet
-  `POST /vc` payload does not include `claimsVerifier`.
+- The Settings default Claims Verifier is `0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4`,
+  matching the deployed ssi-vc contract. The current dwallet `POST /vc` payload still does not
+  include `claimsVerifier`.
 - **Not yet compared against the reference issuer front-end** at
   `https://dev-identity-app.l-net.io/` that the root README points to, including whether the
   backend can drive the credential type / schema dropdowns instead of the hardcoded list in

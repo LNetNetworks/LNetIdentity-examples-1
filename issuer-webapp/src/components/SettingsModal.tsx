@@ -6,10 +6,12 @@ import { PasswordVisibilityButton } from './PasswordVisibilityButton';
 export function SettingsModal({ onClose }: { onClose: () => void }) {
   const { settings, setSettings } = useSettings();
   const [form, setForm] = useState<WalletSettings>(settings);
+  const [showApiKey, setShowApiKey] = useState(false);
   const [showKey, setShowKey] = useState(false);
   const [showMediator, setShowMediator] = useState(false);
   const activeUrl = form.activeBackend === 'dwallet' ? form.dwalletApiBaseUrl : form.ssiVcApiBaseUrl;
-  const canSave = activeUrl.trim().length > 0;
+  const canSave = activeUrl.trim().length > 0
+    && (form.activeBackend === 'dwallet' || form.ssiVcApiKey.trim().length > 0);
 
   function save() {
     if (!canSave) return;
@@ -52,18 +54,30 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
               onChange={(v) => setForm({ ...form, dwalletApiBaseUrl: v })}
             />
           ) : (
-            <TextField
-              id="ssi-vc-api-base-url"
-              label="URL ssi-vc"
-              value={form.ssiVcApiBaseUrl}
-              placeholder="https://dev-identity-api.l-net.io/"
-              onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
-            />
+            <>
+              <TextField
+                id="ssi-vc-api-base-url"
+                label="URL ssi-vc"
+                value={form.ssiVcApiBaseUrl}
+                placeholder="https://dev-identity-api.l-net.io/"
+                onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
+              />
+
+              <SecretField
+                id="ssi-vc-api-key"
+                label="API Key ssi-vc"
+                hint="Se envía en el header apikey cuando el backend activo es ssi-vc."
+                value={form.ssiVcApiKey}
+                visible={showApiKey}
+                onToggleVisible={() => setShowApiKey((v) => !v)}
+                onChange={(v) => setForm({ ...form, ssiVcApiKey: v })}
+              />
+            </>
           )}
 
           {!canSave && (
             <p className="rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 text-xs text-red-200">
-              Definí la URL de {form.activeBackend} para usar ese backend.
+              Definí la URL{form.activeBackend === 'ssi-vc' ? ' y API Key' : ''} de {form.activeBackend} para usar ese backend.
             </p>
           )}
         </section>

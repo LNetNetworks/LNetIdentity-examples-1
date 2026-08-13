@@ -9,6 +9,7 @@ export function getMissingSettings(settings: WalletSettings): string[] {
   }
 
   if (!settings.ssiVcApiBaseUrl.trim()) missing.push('URL de ssi-vc');
+  if (!settings.ssiVcApiKey.trim()) missing.push('API Key ssi-vc');
   if (!settings.walletPrivateKey.trim()) missing.push('Wallet Private Key');
   if (!settings.claimsVerifier.trim()) missing.push('Claims Verifier Smart Contract');
   if (!settings.mediatorKey.trim()) missing.push('Encryption / Mediator Key');

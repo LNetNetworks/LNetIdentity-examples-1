@@ -8,12 +8,15 @@ import {
 } from '../api/client';
 import { useAuth } from './AuthContext';
 
-export const DEFAULT_CLAIMS_VERIFIER = '0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471';
+const LEGACY_DEFAULT_CLAIMS_VERIFIER = '0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471';
+export const DEFAULT_CLAIMS_VERIFIER = '0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4';
+export const DEFAULT_SSI_VC_API_KEY = '3af2fe9f6501a7ac4b06';
 
 const DEFAULT_SETTINGS: WalletSettings = {
   activeBackend: 'dwallet',
   dwalletApiBaseUrl: DEFAULT_DWALLET_API_BASE,
   ssiVcApiBaseUrl: DEFAULT_SSI_VC_API_BASE,
+  ssiVcApiKey: DEFAULT_SSI_VC_API_KEY,
   walletPrivateKey: '',
   claimsVerifier: DEFAULT_CLAIMS_VERIFIER,
   trustedList: '',
@@ -43,6 +46,10 @@ function readSettings(username: string): WalletSettings {
       activeBackend: parsed.activeBackend === 'ssi-vc' ? 'ssi-vc' : 'dwallet',
       dwalletApiBaseUrl: normalizeApiBaseUrl(parsed.dwalletApiBaseUrl || DEFAULT_SETTINGS.dwalletApiBaseUrl),
       ssiVcApiBaseUrl: normalizeApiBaseUrl(parsed.ssiVcApiBaseUrl || DEFAULT_SETTINGS.ssiVcApiBaseUrl),
+      ssiVcApiKey: parsed.ssiVcApiKey || DEFAULT_SETTINGS.ssiVcApiKey,
+      claimsVerifier: !parsed.claimsVerifier || parsed.claimsVerifier === LEGACY_DEFAULT_CLAIMS_VERIFIER
+        ? DEFAULT_SETTINGS.claimsVerifier
+        : parsed.claimsVerifier,
     };
   } catch {
     return DEFAULT_SETTINGS;

@@ -27,7 +27,8 @@ things only became clear by calling the live deployment directly:
 - The issuer integration sends `POST /vc` with
   `{did, subject, type, context, validUntil, data}` when the active backend is `dwallet`.
   When the user selects `ssi-vc` in Settings, `src/api/vc.ts` switches to the legacy payload
-  with `claimsVerifier`, `privatekey`, and `mediatorKey`.
+  with `claimsVerifier`, `privatekey`, and `mediatorKey`, and sends the configured API key in
+  the `apikey` header.
 - `context` is dereferenced server-side as JSON-LD, not just stored — pointing it at a plain
   JSON Schema URL that 404s (or isn't valid JSON-LD) fails issuance with `ERR_SCHEMA_INVALID`.
   This is expected right now for 3 of the 4 ticket schema types (see README).
