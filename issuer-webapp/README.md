@@ -27,8 +27,9 @@ No secrets are stored in environment variables. The issuer logs in through the U
 Keycloak user. The app defaults to `dwallet`, but each user can choose `dwallet` or `ssi-vc` from
 Settings and persist separate API base URLs for both backends in `localStorage`. Wallet Private
 Key / Claims Verifier / Trusted List / Mediator Key / ssi-vc API Key settings are also persisted
-per user; the current `dwallet` issuance call does not send them, while `ssi-vc` uses its legacy
-payload shape and sends the configured API Key in the `apikey` header.
+per user. `Trusted List` is sent when configured; `dwallet` does not send the ssi-vc-only fields,
+while `ssi-vc` uses its legacy payload shape and sends the configured API Key in the `apikey`
+header.
 `VITE_IDENTITY_API_BASE_URL` and `VITE_SSI_VC_API_BASE_URL` (see `.env.example`) only define the
 initial API URL defaults shown in Settings. Other wallet/ssi-vc defaults live in
 `src/config/wallet.ts` so they can be changed from one place.

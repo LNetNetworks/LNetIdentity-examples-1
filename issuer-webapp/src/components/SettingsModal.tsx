@@ -104,27 +104,6 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
-                  Trusted List
-                  <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
-                    Opcional
-                  </span>
-                </label>
-                <input
-                  className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#0b0f19]"
-                  placeholder="0x... (contrato de trusted list, opcional)"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  value={form.trustedList}
-                  onChange={(e) => setForm({ ...form, trustedList: e.target.value })}
-                />
-                <p className="text-xs leading-relaxed text-slate-500">
-                  Reservado por compatibilidad con flujos ssi-vc.
-                </p>
-              </div>
-
               <SecretField
                 id="mediator-key"
                 label="Encryption / Mediator Key"
@@ -136,6 +115,27 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
               />
             </>
           )}
+
+          <div className="space-y-1">
+            <label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+              Trusted List
+              <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
+                Opcional
+              </span>
+            </label>
+            <input
+              className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#0b0f19]"
+              placeholder="0x... (contrato de trusted list, opcional)"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              value={form.trustedList}
+              onChange={(e) => setForm({ ...form, trustedList: e.target.value })}
+            />
+            <p className="text-xs leading-relaxed text-slate-500">
+              Se envía cuando está configurada.
+            </p>
+          </div>
 
           {!canSave && (
             <p className="rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 text-xs text-red-200">

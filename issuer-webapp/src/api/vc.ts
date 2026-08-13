@@ -25,8 +25,8 @@ export interface IssueVCRequestPreview {
   payload: Record<string, unknown>;
 }
 
-function buildDwalletIssuePayload(params: IssueVCParams): Record<string, unknown> {
-  return {
+function buildDwalletIssuePayload(params: IssueVCParams, settings?: WalletSettings): Record<string, unknown> {
+  const payload: Record<string, unknown> = {
     did: params.issuerDid,
     subject: params.subjectDid,
     type: params.type,
@@ -34,6 +34,10 @@ function buildDwalletIssuePayload(params: IssueVCParams): Record<string, unknown
     validUntil: params.validUntil,
     data: params.data,
   };
+
+  if (settings?.trustedList.trim()) payload.trustedList = settings.trustedList.trim();
+
+  return payload;
 }
 
 export function buildIssueVCRequest(
@@ -48,7 +52,7 @@ export function buildIssueVCRequest(
         privateKey: settings?.walletPrivateKey || '',
         mediatorKey: settings?.mediatorKey || '',
       })
-    : buildDwalletIssuePayload(params);
+    : buildDwalletIssuePayload(params, settings);
 
   const apiBaseUrl = settings
     ? normalizeApiBaseUrl(backend === 'dwallet' ? settings.dwalletApiBaseUrl : settings.ssiVcApiBaseUrl)
