@@ -8,8 +8,11 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
   const [form, setForm] = useState<WalletSettings>(settings);
   const [showKey, setShowKey] = useState(false);
   const [showMediator, setShowMediator] = useState(false);
+  const activeUrl = form.activeBackend === 'dwallet' ? form.dwalletApiBaseUrl : form.ssiVcApiBaseUrl;
+  const canSave = activeUrl.trim().length > 0;
 
   function save() {
+    if (!canSave) return;
     setSettings(form);
     onClose();
   }
@@ -19,10 +22,51 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
       <div className="max-h-[90vh] w-full space-y-4 overflow-y-auto rounded-t-[22px] border border-white/10 bg-[#121829] p-5 shadow-2xl sm:max-w-md sm:rounded-[22px]">
         <h2 className="text-xl font-bold tracking-tight text-slate-100">Configuración del Issuer</h2>
 
+        <section className="space-y-3">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-slate-400">Backend de credenciales</p>
+            <div className="grid grid-cols-2 rounded-[13px] border border-white/10 bg-white/[0.045] p-1">
+              <BackendOption
+                label="dwallet"
+                selected={form.activeBackend === 'dwallet'}
+                onSelect={() => setForm({ ...form, activeBackend: 'dwallet' })}
+              />
+              <BackendOption
+                label="ssi-vc"
+                selected={form.activeBackend === 'ssi-vc'}
+                onSelect={() => setForm({ ...form, activeBackend: 'ssi-vc' })}
+              />
+            </div>
+          </div>
+
+          <TextField
+            id="dwallet-api-base-url"
+            label="URL dwallet"
+            value={form.dwalletApiBaseUrl}
+            placeholder="https://dev-identity-dwallet.l-net.io/wallet"
+            onChange={(v) => setForm({ ...form, dwalletApiBaseUrl: v })}
+          />
+
+          <TextField
+            id="ssi-vc-api-base-url"
+            label="URL ssi-vc"
+            value={form.ssiVcApiBaseUrl}
+            placeholder="https://.../wallet"
+            optional={form.activeBackend !== 'ssi-vc'}
+            onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
+          />
+
+          {!canSave && (
+            <p className="rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 text-xs text-red-200">
+              Definí la URL de {form.activeBackend} para usar ese backend.
+            </p>
+          )}
+        </section>
+
         <SecretField
           id="wallet-private-key"
           label="Wallet Private Key"
-          hint="Reservada para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor."
+          hint="Usada cuando el backend activo es ssi-vc. Dwallet no envía este valor."
           value={form.walletPrivateKey}
           visible={showKey}
           onToggleVisible={() => setShowKey((v) => !v)}
@@ -45,7 +89,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             onChange={(e) => setForm({ ...form, claimsVerifier: e.target.value })}
           />
           <p className="text-xs leading-relaxed text-slate-500">
-            Reservado para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor.
+            Usado cuando el backend activo es ssi-vc. Dwallet no envía este valor.
           </p>
         </div>
 
@@ -73,7 +117,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
         <SecretField
           id="mediator-key"
           label="Encryption / Mediator Key"
-          hint="Reservada para una futura integración ssi-vc. La emisión actual por dwallet no envía este valor."
+          hint="Usada cuando el backend activo es ssi-vc. Dwallet no envía este valor."
           value={form.mediatorKey}
           visible={showMediator}
           onToggleVisible={() => setShowMediator((v) => !v)}
@@ -89,12 +133,79 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
           </button>
           <button
             onClick={save}
-            className="min-h-[50px] flex-1 rounded-[14px] bg-emerald-500 px-5 font-semibold text-white transition hover:bg-emerald-400"
+            disabled={!canSave}
+            className="min-h-[50px] flex-1 rounded-[14px] bg-emerald-500 px-5 font-semibold text-white transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Guardar
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function BackendOption({
+  label,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className={`min-h-10 rounded-[10px] px-3 text-sm font-semibold transition ${
+        selected
+          ? 'bg-emerald-500 text-white shadow-[0_10px_24px_-18px_#10b981]'
+          : 'text-slate-400 hover:bg-white/[0.08] hover:text-slate-100'
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function TextField({
+  id,
+  label,
+  value,
+  placeholder,
+  optional,
+  onChange,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  placeholder: string;
+  optional?: boolean;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-1">
+      <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+        {label}
+        {optional && (
+          <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
+            Opcional
+          </span>
+        )}
+      </label>
+      <input
+        id={id}
+        type="url"
+        className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#0b0f19]"
+        placeholder={placeholder}
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
     </div>
   );
 }

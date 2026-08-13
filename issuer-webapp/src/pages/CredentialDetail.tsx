@@ -2,25 +2,36 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getCredential, verifyCredential } from '../api/vc';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import type { VCDetail, VerifyResponse } from '../types';
 
 export function CredentialDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const issuerDid = user?.did;
   const [credential, setCredential] = useState<VCDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<VerifyResponse | null>(null);
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const activeApiBaseUrl = settings.activeBackend === 'dwallet'
+    ? settings.dwalletApiBaseUrl
+    : settings.ssiVcApiBaseUrl;
 
   useEffect(() => {
-    if (!user || !id) return;
-    getCredential(user.did, id)
+    if (!issuerDid || !id) return;
+    setLoading(true);
+    setError(null);
+    setCredential(null);
+    setVerifyResult(null);
+    setVerifyError(null);
+    getCredential(issuerDid, id)
       .then(setCredential)
       .catch((e) => setError(e instanceof Error ? e.message : 'No se pudo cargar la credencial'))
       .finally(() => setLoading(false));
-  }, [user?.did, id]);
+  }, [issuerDid, id, settings.activeBackend, activeApiBaseUrl]);
 
   async function handleVerify() {
     if (!credential) return;

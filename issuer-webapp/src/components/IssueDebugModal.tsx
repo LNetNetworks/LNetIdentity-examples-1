@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { buildIssueVCRequest, type IssueVCParams } from '../api/vc';
+import type { WalletSettings } from '../types';
 
 export function IssueDebugModal({
   params,
+  settings,
   onClose,
 }: {
   params: IssueVCParams;
+  settings: WalletSettings;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
-  const request = buildIssueVCRequest(params);
+  const request = buildIssueVCRequest(params, settings);
   const callExample = `await fetch(${JSON.stringify(request.endpoint)}, {
   method: ${JSON.stringify(request.method)},
   headers: ${JSON.stringify(request.headers, null, 2)},
@@ -65,6 +68,8 @@ export function IssueDebugModal({
           <dl className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.045] p-4 text-sm sm:grid-cols-[7rem_1fr]">
             <dt className="font-medium text-slate-500">Endpoint</dt>
             <dd className="break-all font-mono text-xs text-slate-200">{request.endpoint}</dd>
+            <dt className="font-medium text-slate-500">Backend</dt>
+            <dd className="font-mono text-xs font-semibold text-slate-200">{request.backend}</dd>
             <dt className="font-medium text-slate-500">Método</dt>
             <dd className="font-mono text-xs font-semibold text-slate-200">{request.method}</dd>
             <dt className="font-medium text-slate-500">Autenticación</dt>
@@ -95,8 +100,9 @@ export function IssueDebugModal({
           </section>
 
           <p className="rounded-[10px] border border-amber-300/30 bg-amber-300/15 px-3.5 py-3 text-xs text-amber-200">
-            El access token siempre se oculta. La emisión actual por dwallet no envía Wallet
-            Private Key, Claims Verifier, Trusted List ni Encryption / Mediator Key.
+            El access token siempre se oculta. Dwallet no envía Wallet Private Key, Claims
+            Verifier, Trusted List ni Encryption / Mediator Key; ssi-vc usa los campos requeridos
+            por su payload.
           </p>
         </div>
       </div>

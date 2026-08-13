@@ -2,14 +2,18 @@ import { useState } from 'react';
 import type { IssueVCParams } from '../../api/vc';
 import { IssueDebugModal } from '../../components/IssueDebugModal';
 import { useDebug } from '../../context/debug-context';
+import type { WalletBackend, WalletSettings } from '../../types';
 
 export function Step4Review({
   typeLabel,
   recipientDid,
   schemaUrl,
+  backend,
+  apiBaseUrl,
   expirationISO,
   data,
   issueParams,
+  settings,
   issuing,
   error,
   result,
@@ -18,9 +22,12 @@ export function Step4Review({
   typeLabel: string;
   recipientDid: string;
   schemaUrl: string;
+  backend: WalletBackend;
+  apiBaseUrl: string;
   expirationISO: string;
   data: Record<string, unknown>;
   issueParams: IssueVCParams;
+  settings: WalletSettings;
   issuing: boolean;
   error: string | null;
   result: { id: string } | null;
@@ -62,6 +69,8 @@ export function Step4Review({
         <Row label="Credential Type" value={typeLabel} />
         <Row label="Recipient DID" value={recipientDid} mono />
         <Row label="Schema" value={schemaUrl} mono />
+        <Row label="Backend" value={backend} mono />
+        <Row label="API base" value={apiBaseUrl || '(sin configurar)'} mono />
         <Row label="Expiration Date" value={expirationISO} mono />
       </dl>
 
@@ -99,7 +108,11 @@ export function Step4Review({
       </button>
 
       {debugEnabled && debugModalOpen && (
-        <IssueDebugModal params={issueParams} onClose={() => setDebugModalOpen(false)} />
+        <IssueDebugModal
+          params={issueParams}
+          settings={settings}
+          onClose={() => setDebugModalOpen(false)}
+        />
       )}
     </div>
   );

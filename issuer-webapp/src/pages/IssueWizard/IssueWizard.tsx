@@ -8,6 +8,8 @@ import { fetchSchema } from '../../data/credentialTypes';
 import { defaultExpiration, toISODateTime } from '../../utils/date';
 import { issueVC, type IssueVCParams } from '../../api/vc';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
+import { getMissingSettings, getMissingSettingsMessage } from '../../utils/settings';
 import type { CredentialTypeOption, JsonSchema } from '../../types';
 
 const TOTAL_STEPS = 4;
@@ -15,6 +17,7 @@ const { dateStr: DEFAULT_DATE, timeStr: DEFAULT_TIME } = defaultExpiration();
 
 export function IssueWizard() {
   const { user } = useAuth();
+  const { settings } = useSettings();
 
   const [step, setStep] = useState(1);
   const [selectedType, setSelectedType] = useState<CredentialTypeOption | null>(null);
@@ -65,7 +68,12 @@ export function IssueWizard() {
     setIssuing(true);
     setIssueError(null);
     try {
-      const res = await issueVC(issueParams);
+      const missingSettings = getMissingSettings(settings);
+      if (missingSettings.length > 0) {
+        setIssueError(getMissingSettingsMessage(missingSettings));
+        return;
+      }
+      const res = await issueVC(issueParams, settings);
       setResult(res);
     } catch (e) {
       setIssueError(e instanceof Error ? e.message : String(e));
@@ -102,9 +110,12 @@ export function IssueWizard() {
           typeLabel={selectedType.label}
           recipientDid={recipientDid}
           schemaUrl={selectedType.schemaUrl}
+          backend={settings.activeBackend}
+          apiBaseUrl={settings.activeBackend === 'dwallet' ? settings.dwalletApiBaseUrl : settings.ssiVcApiBaseUrl}
           expirationISO={toISODateTime(expirationDate, DEFAULT_TIME)}
           data={{ ...formValues, id: recipientDid }}
           issueParams={issueParams}
+          settings={settings}
           issuing={issuing}
           error={issueError}
           result={result}

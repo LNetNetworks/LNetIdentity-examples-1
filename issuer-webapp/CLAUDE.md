@@ -24,9 +24,9 @@ things only became clear by calling the live deployment directly:
   (idempotent get-or-create, empty body) right after login to resolve the issuer's own DID —
   don't ask the user for it or try to decode it out of the JWT, it isn't there.
 - The issuer integration sends `POST /vc` with
-  `{did, subject, type, context, validUntil, data}` for the current dwallet flow. Keep the
-  `ssi-vc` shape nearby in `src/api/vc.ts`, but do not send `claimsVerifier`, `privatekey`, or
-  `mediatorKey` while the app is targeting dwallet.
+  `{did, subject, type, context, validUntil, data}` when the active backend is `dwallet`.
+  When the user selects `ssi-vc` in Settings, `src/api/vc.ts` switches to the legacy payload
+  with `claimsVerifier`, `privatekey`, and `mediatorKey`.
 - `context` is dereferenced server-side as JSON-LD, not just stored — pointing it at a plain
   JSON Schema URL that 404s (or isn't valid JSON-LD) fails issuance with `ERR_SCHEMA_INVALID`.
   This is expected right now for 3 of the 4 ticket schema types (see README).

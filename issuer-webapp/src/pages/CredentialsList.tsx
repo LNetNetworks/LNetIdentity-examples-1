@@ -2,21 +2,29 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listCredentials } from '../api/vc';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import type { CredentialSummary } from '../types';
 
 export function CredentialsList() {
   const { user } = useAuth();
+  const { settings } = useSettings();
+  const issuerDid = user?.did;
   const [items, setItems] = useState<CredentialSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const activeApiBaseUrl = settings.activeBackend === 'dwallet'
+    ? settings.dwalletApiBaseUrl
+    : settings.ssiVcApiBaseUrl;
 
   useEffect(() => {
-    if (!user) return;
-    listCredentials(user.did)
+    if (!issuerDid) return;
+    setLoading(true);
+    setError(null);
+    listCredentials(issuerDid)
       .then(setItems)
       .catch((e) => setError(e instanceof Error ? e.message : 'No se pudieron cargar las credenciales'))
       .finally(() => setLoading(false));
-  }, [user?.did]);
+  }, [issuerDid, settings.activeBackend, activeApiBaseUrl]);
 
   if (loading) return <p className="py-12 text-center text-sm text-slate-400">Cargando…</p>;
   if (error) return <pre className="whitespace-pre-wrap rounded-[10px] border border-red-400/30 bg-red-400/15 p-3.5 font-mono text-xs text-red-200">{error}</pre>;

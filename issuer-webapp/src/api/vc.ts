@@ -1,5 +1,5 @@
-import { API_BASE, apiFetch } from './client';
-import type { CredentialSummary, VCDetail, VerifyResponse } from '../types';
+import { getActiveApiBase, getActiveBackend, normalizeApiBaseUrl, apiFetch } from './client';
+import type { CredentialSummary, VCDetail, VerifyResponse, WalletBackend, WalletSettings } from '../types';
 
 export interface IssueVCParams {
   issuerDid: string;
@@ -19,12 +19,14 @@ export interface SsiVCIssueParams extends IssueVCParams {
 export interface IssueVCRequestPreview {
   endpoint: string;
   method: 'POST';
+  backend: WalletBackend;
+  apiBaseUrl: string;
   headers: Record<string, string>;
   payload: Record<string, unknown>;
 }
 
-export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPreview {
-  const payload: Record<string, unknown> = {
+function buildDwalletIssuePayload(params: IssueVCParams): Record<string, unknown> {
+  return {
     did: params.issuerDid,
     subject: params.subjectDid,
     type: params.type,
@@ -32,10 +34,31 @@ export function buildIssueVCRequest(params: IssueVCParams): IssueVCRequestPrevie
     validUntil: params.validUntil,
     data: params.data,
   };
+}
+
+export function buildIssueVCRequest(
+  params: IssueVCParams,
+  settings?: WalletSettings,
+): IssueVCRequestPreview {
+  const backend = settings?.activeBackend || getActiveBackend();
+  const payload = backend === 'ssi-vc'
+    ? buildSsiVCIssuePayload({
+        ...params,
+        claimsVerifier: settings?.claimsVerifier || '',
+        privateKey: settings?.walletPrivateKey || '',
+        mediatorKey: settings?.mediatorKey || '',
+      })
+    : buildDwalletIssuePayload(params);
+
+  const apiBaseUrl = settings
+    ? normalizeApiBaseUrl(backend === 'dwallet' ? settings.dwalletApiBaseUrl : settings.ssiVcApiBaseUrl)
+    : getActiveApiBase();
 
   return {
-    endpoint: `${API_BASE}/vc`,
+    endpoint: `${apiBaseUrl}/vc`,
     method: 'POST',
+    backend,
+    apiBaseUrl,
     headers: {
       'Content-Type': 'application/json',
       Authorization: 'Bearer <access-token>',
@@ -58,13 +81,13 @@ export function buildSsiVCIssuePayload(params: SsiVCIssueParams): Record<string,
   };
 }
 
-export async function issueVC(params: IssueVCParams): Promise<{ id: string }> {
-  const request = buildIssueVCRequest(params);
+export async function issueVC(params: IssueVCParams, settings?: WalletSettings): Promise<{ id: string }> {
+  const request = buildIssueVCRequest(params, settings);
 
   return apiFetch<{ id: string }>('/vc', {
     method: request.method,
     body: JSON.stringify(request.payload),
-  });
+  }, request.apiBaseUrl);
 }
 
 export async function listCredentials(issuerDid: string): Promise<CredentialSummary[]> {

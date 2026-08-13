@@ -1,8 +1,19 @@
 import type { WalletSettings } from '../types';
 
 export function getMissingSettings(settings: WalletSettings): string[] {
-  void settings;
-  return [];
+  const missing: string[] = [];
+
+  if (settings.activeBackend === 'dwallet') {
+    if (!settings.dwalletApiBaseUrl.trim()) missing.push('URL de dwallet');
+    return missing;
+  }
+
+  if (!settings.ssiVcApiBaseUrl.trim()) missing.push('URL de ssi-vc');
+  if (!settings.walletPrivateKey.trim()) missing.push('Wallet Private Key');
+  if (!settings.claimsVerifier.trim()) missing.push('Claims Verifier Smart Contract');
+  if (!settings.mediatorKey.trim()) missing.push('Encryption / Mediator Key');
+
+  return missing;
 }
 
 export function getMissingSettingsMessage(missing: string[]): string {

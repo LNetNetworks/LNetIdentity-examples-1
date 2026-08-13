@@ -5,7 +5,12 @@ export interface AuthUser {
   refreshToken?: string;
 }
 
+export type WalletBackend = 'dwallet' | 'ssi-vc';
+
 export interface WalletSettings {
+  activeBackend: WalletBackend;
+  dwalletApiBaseUrl: string;
+  ssiVcApiBaseUrl: string;
   walletPrivateKey: string;
   claimsVerifier: string;
   trustedList: string;

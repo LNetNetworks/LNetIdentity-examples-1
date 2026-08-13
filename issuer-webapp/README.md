@@ -24,11 +24,12 @@ No server component — a pure client SPA against the Wallet API (CORS is open t
 ## Configuration
 
 No secrets are stored in environment variables. The issuer logs in through the UI with their
-Keycloak user. Wallet Private Key / Claims Verifier / Trusted List / Mediator Key settings are
-persisted in `localStorage` per user for compatibility with possible future flows, but the
-current dwallet issuance call does not send them. `VITE_IDENTITY_API_BASE_URL` (see
-`.env.example`) overrides the Wallet API base URL if you need to point at a different
-environment; it defaults to the dev deployment.
+Keycloak user. The app defaults to `dwallet`, but each user can choose `dwallet` or `ssi-vc` from
+Settings and persist separate API base URLs for both backends in `localStorage`. Wallet Private
+Key / Claims Verifier / Trusted List / Mediator Key settings are also persisted per user; the
+current `dwallet` issuance call does not send them, while `ssi-vc` uses its legacy payload shape.
+`VITE_IDENTITY_API_BASE_URL` and `VITE_SSI_VC_API_BASE_URL` (see `.env.example`) only define the
+initial defaults shown in Settings.
 
 ## Known issues
 
