@@ -33,9 +33,8 @@ function buildDwalletIssuePayload(params: IssueVCParams, settings?: WalletSettin
     context: params.context,
     validUntil: params.validUntil,
     data: params.data,
+    trustedList: settings?.trustedList.trim() || '',
   };
-
-  if (settings?.trustedList.trim()) payload.trustedList = settings.trustedList.trim();
 
   return payload;
 }

@@ -29,7 +29,7 @@ things only became clear by calling the live deployment directly:
   a DID, because the live dev deployment can return a different wallet DID there.
 - The issuer integration sends `POST /vc` with
   `{did, subject, type, context, validUntil, data}` when the active backend is `dwallet`, plus
-  `trustedList` when configured.
+  `trustedList` always present as the configured value or an empty string.
   When the user selects `ssi-vc` in Settings, `src/api/vc.ts` switches to the legacy payload
   with `claimsVerifier`, `privatekey`, and `mediatorKey`, and authenticates only with the
   configured API key in the `apikey` header. Do not send the Bearer token to `ssi-vc`.
