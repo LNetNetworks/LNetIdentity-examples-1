@@ -121,9 +121,12 @@ export async function listCredentials(
   settings?: WalletSettings,
 ): Promise<CredentialSummary[]> {
   const request = buildReadCredentialRequest(settings);
+  const path = request.backend === 'ssi-vc'
+    ? '/vc'
+    : `/issuer/${encodeURIComponent(issuerDid)}`;
 
   return apiFetch<CredentialSummary[]>(
-    `/issuer/${encodeURIComponent(issuerDid)}`,
+    path,
     {
       method: 'GET',
       headers: request.headers,
