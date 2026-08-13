@@ -6,6 +6,7 @@ interface LoginResponse {
   refresh_token: string;
   token_type: string;
   expires_in: number;
+  did?: string;
 }
 
 interface WalletIdResponse {
@@ -20,16 +21,14 @@ export async function login(user: string, password: string): Promise<AuthUser> {
   });
   setAccessToken(tokenRes.access_token);
 
-  // /login does not return the user's DID; /wallet-id is a get-or-create
-  // call that idempotently returns the existing DID for the authenticated user.
-  const walletId = await apiFetch<WalletIdResponse>('/wallet-id', {
+  const did = tokenRes.did || (await apiFetch<WalletIdResponse>('/wallet-id', {
     method: 'POST',
     body: JSON.stringify({}),
-  });
+  })).did;
 
   return {
     username: user,
-    did: walletId.did,
+    did,
     accessToken: tokenRes.access_token,
     refreshToken: tokenRes.refresh_token,
   };

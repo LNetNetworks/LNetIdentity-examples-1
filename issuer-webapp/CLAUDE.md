@@ -20,9 +20,10 @@ things only became clear by calling the live deployment directly:
 
 - Real base path is `/wallet` (e.g. `POST /wallet/login`), overridable via
   `VITE_IDENTITY_API_BASE_URL`.
-- `/login` returns a raw Keycloak token with no DID. `src/api/auth.ts` calls `POST /wallet-id`
-  (idempotent get-or-create, empty body) right after login to resolve the issuer's own DID —
-  don't ask the user for it or try to decode it out of the JWT, it isn't there.
+- `/login` currently returns the issuer DID beside the Keycloak token. Use that DID as the
+  authenticated issuer identity. `src/api/auth.ts` keeps `POST /wallet-id` as a fallback for
+  environments that omit `did` from `/login`; do not prefer `/wallet-id` when `/login` includes
+  a DID, because the live dev deployment can return a different wallet DID there.
 - The issuer integration sends `POST /vc` with
   `{did, subject, type, context, validUntil, data}` when the active backend is `dwallet`.
   When the user selects `ssi-vc` in Settings, `src/api/vc.ts` switches to the legacy payload
