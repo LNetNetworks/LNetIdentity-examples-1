@@ -35,7 +35,7 @@ export function Layout({ children }: { children: ReactNode }) {
               >
                 <span
                   aria-hidden="true"
-                  className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                  className={`pointer-events-none absolute left-0.5 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-white shadow-sm transition-transform ${
                     debugEnabled ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
