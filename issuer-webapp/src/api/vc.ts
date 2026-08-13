@@ -101,12 +101,54 @@ export async function issueVC(params: IssueVCParams, settings?: WalletSettings):
   }, request.apiBaseUrl, request.backend !== 'ssi-vc');
 }
 
-export async function listCredentials(issuerDid: string): Promise<CredentialSummary[]> {
-  return apiFetch<CredentialSummary[]>(`/issuer/${encodeURIComponent(issuerDid)}`);
+function buildReadCredentialRequest(settings?: WalletSettings) {
+  const backend = settings?.activeBackend || getActiveBackend();
+  const apiBaseUrl = settings
+    ? normalizeApiBaseUrl(backend === 'dwallet' ? settings.dwalletApiBaseUrl : settings.ssiVcApiBaseUrl)
+    : getActiveApiBase();
+
+  return {
+    backend,
+    apiBaseUrl,
+    headers: backend === 'ssi-vc' && settings?.ssiVcApiKey
+      ? { apikey: settings.ssiVcApiKey }
+      : undefined,
+  };
 }
 
-export async function getCredential(issuerDid: string, id: string): Promise<VCDetail> {
-  return apiFetch<VCDetail>(`/issuer/${encodeURIComponent(issuerDid)}/id/${encodeURIComponent(id)}`);
+export async function listCredentials(
+  issuerDid: string,
+  settings?: WalletSettings,
+): Promise<CredentialSummary[]> {
+  const request = buildReadCredentialRequest(settings);
+
+  return apiFetch<CredentialSummary[]>(
+    `/issuer/${encodeURIComponent(issuerDid)}`,
+    {
+      method: 'GET',
+      headers: request.headers,
+    },
+    request.apiBaseUrl,
+    request.backend !== 'ssi-vc',
+  );
+}
+
+export async function getCredential(
+  issuerDid: string,
+  id: string,
+  settings?: WalletSettings,
+): Promise<VCDetail> {
+  const request = buildReadCredentialRequest(settings);
+
+  return apiFetch<VCDetail>(
+    `/issuer/${encodeURIComponent(issuerDid)}/id/${encodeURIComponent(id)}`,
+    {
+      method: 'GET',
+      headers: request.headers,
+    },
+    request.apiBaseUrl,
+    request.backend !== 'ssi-vc',
+  );
 }
 
 export async function verifyCredential(credential: VCDetail): Promise<VerifyResponse> {

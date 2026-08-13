@@ -16,9 +16,6 @@ export function CredentialDetail() {
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<VerifyResponse | null>(null);
   const [verifyError, setVerifyError] = useState<string | null>(null);
-  const activeApiBaseUrl = settings.activeBackend === 'dwallet'
-    ? settings.dwalletApiBaseUrl
-    : settings.ssiVcApiBaseUrl;
 
   useEffect(() => {
     if (!issuerDid || !id) return;
@@ -27,11 +24,11 @@ export function CredentialDetail() {
     setCredential(null);
     setVerifyResult(null);
     setVerifyError(null);
-    getCredential(issuerDid, id)
+    getCredential(issuerDid, id, settings)
       .then(setCredential)
       .catch((e) => setError(e instanceof Error ? e.message : 'No se pudo cargar la credencial'))
       .finally(() => setLoading(false));
-  }, [issuerDid, id, settings.activeBackend, activeApiBaseUrl]);
+  }, [issuerDid, id, settings]);
 
   async function handleVerify() {
     if (!credential) return;

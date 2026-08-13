@@ -12,19 +12,16 @@ export function CredentialsList() {
   const [items, setItems] = useState<CredentialSummary[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const activeApiBaseUrl = settings.activeBackend === 'dwallet'
-    ? settings.dwalletApiBaseUrl
-    : settings.ssiVcApiBaseUrl;
 
   useEffect(() => {
     if (!issuerDid) return;
     setLoading(true);
     setError(null);
-    listCredentials(issuerDid)
+    listCredentials(issuerDid, settings)
       .then(setItems)
       .catch((e) => setError(e instanceof Error ? e.message : 'No se pudieron cargar las credenciales'))
       .finally(() => setLoading(false));
-  }, [issuerDid, settings.activeBackend, activeApiBaseUrl]);
+  }, [issuerDid, settings]);
 
   if (loading) return <p className="py-12 text-center text-sm text-slate-400">Cargando…</p>;
   if (error) return <pre className="whitespace-pre-wrap rounded-[10px] border border-red-400/30 bg-red-400/15 p-3.5 font-mono text-xs text-red-200">{error}</pre>;
