@@ -60,6 +60,7 @@ export async function apiFetch<T>(
   path: string,
   options: RequestInit = {},
   apiBaseUrl = getActiveApiBase(),
+  includeAccessToken = true,
 ): Promise<T> {
   const endpoint = `${normalizeApiBaseUrl(apiBaseUrl)}${path}`;
   const method = options.method || 'GET';
@@ -67,7 +68,7 @@ export async function apiFetch<T>(
     'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> | undefined),
   };
-  if (accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
+  if (includeAccessToken && accessToken) headers['Authorization'] = `Bearer ${accessToken}`;
 
   const res = await fetch(endpoint, { ...options, headers });
   const text = await res.text();

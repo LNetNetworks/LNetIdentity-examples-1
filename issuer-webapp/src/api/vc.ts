@@ -59,11 +59,15 @@ export function buildIssueVCRequest(
     method: 'POST',
     backend,
     apiBaseUrl,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: 'Bearer <access-token>',
-      ...(backend === 'ssi-vc' && settings?.ssiVcApiKey ? { apikey: '<api-key>' } : {}),
-    },
+    headers: backend === 'ssi-vc'
+      ? {
+          'Content-Type': 'application/json',
+          ...(settings?.ssiVcApiKey ? { apikey: '<api-key>' } : {}),
+        }
+      : {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer <access-token>',
+        },
     payload,
   };
 }
@@ -91,7 +95,7 @@ export async function issueVC(params: IssueVCParams, settings?: WalletSettings):
       ? { apikey: settings.ssiVcApiKey }
       : undefined,
     body: JSON.stringify(request.payload),
-  }, request.apiBaseUrl);
+  }, request.apiBaseUrl, request.backend !== 'ssi-vc');
 }
 
 export async function listCredentials(issuerDid: string): Promise<CredentialSummary[]> {
