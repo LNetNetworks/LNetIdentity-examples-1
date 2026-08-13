@@ -24,8 +24,12 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
 
         <section className="space-y-3">
           <div className="space-y-1">
-            <p className="text-sm font-semibold text-slate-400">Backend de credenciales</p>
-            <div className="grid grid-cols-2 rounded-[13px] border border-white/10 bg-white/[0.045] p-1">
+            <p className="text-sm font-semibold text-slate-400">Backend a usar</p>
+            <div
+              role="radiogroup"
+              aria-label="Backend a usar"
+              className="grid grid-cols-2 gap-1 rounded-[13px] border border-white/10 bg-white/[0.045] p-1"
+            >
               <BackendOption
                 label="dwallet"
                 selected={form.activeBackend === 'dwallet'}
@@ -39,22 +43,23 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          <TextField
-            id="dwallet-api-base-url"
-            label="URL dwallet"
-            value={form.dwalletApiBaseUrl}
-            placeholder="https://dev-identity-dwallet.l-net.io/wallet"
-            onChange={(v) => setForm({ ...form, dwalletApiBaseUrl: v })}
-          />
-
-          <TextField
-            id="ssi-vc-api-base-url"
-            label="URL ssi-vc"
-            value={form.ssiVcApiBaseUrl}
-            placeholder="https://.../wallet"
-            optional={form.activeBackend !== 'ssi-vc'}
-            onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
-          />
+          {form.activeBackend === 'dwallet' ? (
+            <TextField
+              id="dwallet-api-base-url"
+              label="URL dwallet"
+              value={form.dwalletApiBaseUrl}
+              placeholder="https://dev-identity-dwallet.l-net.io/wallet"
+              onChange={(v) => setForm({ ...form, dwalletApiBaseUrl: v })}
+            />
+          ) : (
+            <TextField
+              id="ssi-vc-api-base-url"
+              label="URL ssi-vc"
+              value={form.ssiVcApiBaseUrl}
+              placeholder="https://dev-identity-api.l-net.io/"
+              onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
+            />
+          )}
 
           {!canSave && (
             <p className="rounded-[10px] border border-red-400/30 bg-red-400/15 px-3.5 py-3 text-xs text-red-200">
@@ -175,26 +180,17 @@ function TextField({
   label,
   value,
   placeholder,
-  optional,
   onChange,
 }: {
   id: string;
   label: string;
   value: string;
   placeholder: string;
-  optional?: boolean;
   onChange: (value: string) => void;
 }) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-slate-400">
-        {label}
-        {optional && (
-          <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
-            Opcional
-          </span>
-        )}
-      </label>
+      <label htmlFor={id} className="text-sm font-semibold text-slate-400">{label}</label>
       <input
         id={id}
         type="url"
