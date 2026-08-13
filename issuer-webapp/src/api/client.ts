@@ -1,12 +1,13 @@
 import { APIError, type WalletBackend, type WalletSettings } from '../types';
+import { WALLET_CONFIG } from '../config/wallet';
 
 // The Swagger UI documents this service without its real base path; verified
 // against the live deployment that every route actually lives under /wallet.
 // Override with VITE_IDENTITY_API_BASE_URL (see .env.example) for a different environment.
 export const DEFAULT_DWALLET_API_BASE =
-  import.meta.env.VITE_IDENTITY_API_BASE_URL || 'https://dev-identity-dwallet.l-net.io/wallet';
+  WALLET_CONFIG.dwalletApiBaseUrl;
 export const DEFAULT_SSI_VC_API_BASE =
-  import.meta.env.VITE_SSI_VC_API_BASE_URL || 'https://dev-identity-api.l-net.io/';
+  WALLET_CONFIG.ssiVcApiBaseUrl;
 export const API_BASE = DEFAULT_DWALLET_API_BASE;
 
 let activeBackend: WalletBackend = 'dwallet';

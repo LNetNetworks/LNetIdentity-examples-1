@@ -30,7 +30,8 @@ Key / Claims Verifier / Trusted List / Mediator Key / ssi-vc API Key settings ar
 per user; the current `dwallet` issuance call does not send them, while `ssi-vc` uses its legacy
 payload shape and sends the configured API Key in the `apikey` header.
 `VITE_IDENTITY_API_BASE_URL` and `VITE_SSI_VC_API_BASE_URL` (see `.env.example`) only define the
-initial defaults shown in Settings.
+initial API URL defaults shown in Settings. Other wallet/ssi-vc defaults live in
+`src/config/wallet.ts` so they can be changed from one place.
 
 ## Known issues
 

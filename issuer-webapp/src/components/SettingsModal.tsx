@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
+import { WALLET_CONFIG } from '../config/wallet';
 import type { WalletSettings } from '../types';
 import { PasswordVisibilityButton } from './PasswordVisibilityButton';
 
@@ -50,7 +51,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
               id="dwallet-api-base-url"
               label="URL dwallet"
               value={form.dwalletApiBaseUrl}
-              placeholder="https://dev-identity-dwallet.l-net.io/wallet"
+              placeholder={WALLET_CONFIG.dwalletApiBaseUrl}
               onChange={(v) => setForm({ ...form, dwalletApiBaseUrl: v })}
             />
           ) : (
@@ -59,7 +60,7 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 id="ssi-vc-api-base-url"
                 label="URL ssi-vc"
                 value={form.ssiVcApiBaseUrl}
-                placeholder="https://dev-identity-api.l-net.io/"
+                placeholder={WALLET_CONFIG.ssiVcApiBaseUrl}
                 onChange={(v) => setForm({ ...form, ssiVcApiBaseUrl: v })}
               />
 
@@ -72,6 +73,67 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
                 onToggleVisible={() => setShowApiKey((v) => !v)}
                 onChange={(v) => setForm({ ...form, ssiVcApiKey: v })}
               />
+
+              <SecretField
+                id="wallet-private-key"
+                label="Wallet Private Key"
+                hint="Se envía en el payload cuando el backend activo es ssi-vc."
+                value={form.walletPrivateKey}
+                visible={showKey}
+                onToggleVisible={() => setShowKey((v) => !v)}
+                onChange={(v) => setForm({ ...form, walletPrivateKey: v })}
+              />
+
+              <div className="space-y-1">
+                <label htmlFor="claims-verifier" className="text-sm font-semibold text-slate-400">
+                  Claims Verifier Smart Contract
+                </label>
+                <input
+                  id="claims-verifier"
+                  type="text"
+                  className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#0b0f19]"
+                  placeholder="0x..."
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={form.claimsVerifier}
+                  onChange={(e) => setForm({ ...form, claimsVerifier: e.target.value })}
+                />
+                <p className="text-xs leading-relaxed text-slate-500">
+                  Se envía en el payload cuando el backend activo es ssi-vc.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
+                  Trusted List
+                  <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
+                    Opcional
+                  </span>
+                </label>
+                <input
+                  className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#0b0f19]"
+                  placeholder="0x... (contrato de trusted list, opcional)"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  value={form.trustedList}
+                  onChange={(e) => setForm({ ...form, trustedList: e.target.value })}
+                />
+                <p className="text-xs leading-relaxed text-slate-500">
+                  Reservado por compatibilidad con flujos ssi-vc.
+                </p>
+              </div>
+
+              <SecretField
+                id="mediator-key"
+                label="Encryption / Mediator Key"
+                hint="Se envía en el payload cuando el backend activo es ssi-vc."
+                value={form.mediatorKey}
+                visible={showMediator}
+                onToggleVisible={() => setShowMediator((v) => !v)}
+                onChange={(v) => setForm({ ...form, mediatorKey: v })}
+              />
             </>
           )}
 
@@ -81,67 +143,6 @@ export function SettingsModal({ onClose }: { onClose: () => void }) {
             </p>
           )}
         </section>
-
-        <SecretField
-          id="wallet-private-key"
-          label="Wallet Private Key"
-          hint="Usada cuando el backend activo es ssi-vc. Dwallet no envía este valor."
-          value={form.walletPrivateKey}
-          visible={showKey}
-          onToggleVisible={() => setShowKey((v) => !v)}
-          onChange={(v) => setForm({ ...form, walletPrivateKey: v })}
-        />
-
-        <div className="space-y-1">
-          <label htmlFor="claims-verifier" className="text-sm font-semibold text-slate-400">
-            Claims Verifier Smart Contract
-          </label>
-          <input
-            id="claims-verifier"
-            type="text"
-            className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition focus:border-emerald-500 focus:bg-[#0b0f19]"
-            placeholder="0x…"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            value={form.claimsVerifier}
-            onChange={(e) => setForm({ ...form, claimsVerifier: e.target.value })}
-          />
-          <p className="text-xs leading-relaxed text-slate-500">
-            Usado cuando el backend activo es ssi-vc. Dwallet no envía este valor.
-          </p>
-        </div>
-
-        <div className="space-y-1">
-          <label className="flex items-center gap-2 text-sm font-semibold text-slate-400">
-            Trusted List
-            <span className="rounded-full border border-white/10 bg-white/[0.08] px-2 py-0.5 text-xs font-medium text-slate-400">
-              Opcional
-            </span>
-          </label>
-          <input
-            className="min-h-[50px] w-full rounded-[13px] border border-white/10 bg-white/[0.045] px-3.5 py-3 font-mono text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-emerald-500 focus:bg-[#0b0f19]"
-            placeholder="0x… (contrato de trusted list, opcional)"
-            autoCapitalize="none"
-            autoCorrect="off"
-            spellCheck={false}
-            value={form.trustedList}
-            onChange={(e) => setForm({ ...form, trustedList: e.target.value })}
-          />
-          <p className="text-xs leading-relaxed text-slate-500">
-            Reservado por compatibilidad. La emisión actual por dwallet no envía este valor.
-          </p>
-        </div>
-
-        <SecretField
-          id="mediator-key"
-          label="Encryption / Mediator Key"
-          hint="Usada cuando el backend activo es ssi-vc. Dwallet no envía este valor."
-          value={form.mediatorKey}
-          visible={showMediator}
-          onToggleVisible={() => setShowMediator((v) => !v)}
-          onChange={(v) => setForm({ ...form, mediatorKey: v })}
-        />
 
         <div className="flex gap-2 pt-2">
           <button

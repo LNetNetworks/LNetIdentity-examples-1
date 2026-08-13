@@ -13,6 +13,9 @@ the backend change, rather than duplicating it here.
 There is no test framework configured; `npm run build` (runs `tsc -b` first) is the fastest way
 to catch a broken change.
 
+Wallet/ssi-vc configurable defaults live in `src/config/wallet.ts`. Update that file instead of
+scattering endpoint URLs, API keys, or contract defaults through components/contexts.
+
 ## Wallet API — verified quirks
 
 Don't trust the Swagger UI at `https://dev-identity-dwallet.l-net.io/` at face value; several

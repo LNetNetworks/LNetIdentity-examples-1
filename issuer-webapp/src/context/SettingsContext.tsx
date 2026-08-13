@@ -6,11 +6,12 @@ import {
   DEFAULT_SSI_VC_API_BASE,
   normalizeApiBaseUrl,
 } from '../api/client';
+import { WALLET_CONFIG } from '../config/wallet';
 import { useAuth } from './AuthContext';
 
-const LEGACY_DEFAULT_CLAIMS_VERIFIER = '0xAa9f4b97789Aabcd4fD4f3dF35C2112B868c7471';
-export const DEFAULT_CLAIMS_VERIFIER = '0xf61aA3e9Ff67c53Adc47f2c02dE7545aDfB9c0B4';
-export const DEFAULT_SSI_VC_API_KEY = '3af2fe9f6501a7ac4b06';
+const LEGACY_DEFAULT_CLAIMS_VERIFIER = WALLET_CONFIG.legacyClaimsVerifier;
+export const DEFAULT_CLAIMS_VERIFIER = WALLET_CONFIG.ssiVcClaimsVerifier;
+export const DEFAULT_SSI_VC_API_KEY = WALLET_CONFIG.ssiVcApiKey;
 
 const DEFAULT_SETTINGS: WalletSettings = {
   activeBackend: 'dwallet',
