@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/LNetNetworks/vc-repository/main/schemas/education_schema.json",
+  "title": "Education Credential",
+  "type": "object",
+  "required": ["credentialSubject"],
+  "properties": {
+    "credentialSubject": {
+      "type": "object",
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "institution",
+        "degree",
+        "fieldOfStudy",
+        "graduationDate",
+        "country"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firstName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lastName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "institution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "degree": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fieldOfStudy": {
+          "type": "string",
+          "minLength": 1
+        },
+        "graduationDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "country": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

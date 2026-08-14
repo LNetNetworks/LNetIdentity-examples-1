@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/LNetNetworks/vc-repository/main/schemas/skills_schema.json",
+  "title": "Skills Credential",
+  "type": "object",
+  "required": ["credentialSubject"],
+  "properties": {
+    "credentialSubject": {
+      "type": "object",
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "skill",
+        "level",
+        "yearsOfExperience"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firstName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lastName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "skill": {
+          "type": "string",
+          "minLength": 1
+        },
+        "level": {
+          "type": "string",
+          "enum": [
+            "Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert"
+          ]
+        },
+        "yearsOfExperience": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

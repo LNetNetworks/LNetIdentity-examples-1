@@ -1,0 +1,47 @@
+# CLAUDE.md
+
+Guidance for Claude Code when working in this directory. See `../CLAUDE.md` and `../Readme.md`
+for the system-wide picture (roles, trust chain, other apps).
+
+## Status
+
+Functional: login/logout, 4-step issuance wizard, credentials list/detail, verify. Revoke is
+wired in the UI but calls into stubs (`src/api/vc.ts`) since the backend doesn't expose it yet.
+See `README.md`'s "Known issues" for the full list — keep that section up to date as things on
+the backend change, rather than duplicating it here.
+
+There is no test framework configured; `npm run build` (runs `tsc -b` first) is the fastest way
+to catch a broken change.
+
+Wallet/ssi-vc configurable defaults live in `src/config/wallet.ts`. Update that file instead of
+scattering endpoint URLs, API keys, or contract defaults through components/contexts.
+
+## Wallet API — verified quirks
+
+Don't trust the Swagger UI at `https://dev-identity-dwallet.l-net.io/` at face value; several
+things only became clear by calling the live deployment directly:
+
+- Real base path is `/wallet` (e.g. `POST /wallet/login`), overridable via
+  `VITE_IDENTITY_API_BASE_URL`.
+- `/login` currently returns the issuer DID beside the Keycloak token. Use that DID as the
+  authenticated issuer identity. `src/api/auth.ts` keeps `POST /wallet-id` as a fallback for
+  environments that omit `did` from `/login`; do not prefer `/wallet-id` when `/login` includes
+  a DID, because the live dev deployment can return a different wallet DID there.
+- The issuer integration sends `POST /vc` with
+  `{did, subject, type, context, validUntil, data}` when the active backend is `dwallet`, plus
+  `trustedList` always present as the configured value or an empty string.
+  When the user selects `ssi-vc` in Settings, `src/api/vc.ts` switches to the legacy payload
+  with `claimsVerifier`, `privatekey`, and `mediatorKey`, and authenticates only with the
+  configured API key in the `apikey` header. Do not send the Bearer token to `ssi-vc`.
+- `context` is dereferenced server-side as JSON-LD, not just stored — pointing it at a plain
+  JSON Schema URL that 404s (or isn't valid JSON-LD) fails issuance with `ERR_SCHEMA_INVALID`.
+  This is expected right now for 3 of the 4 ticket schema types (see README).
+- `GET /issuer/{did}` lists, `GET /issuer/{did}/id/{id}` gets one, `POST /verify` verifies with
+  `{vc: {credential}}`. No `GET /vc`, `GET /vc/:id`, `DELETE /vc/:id`, or `POST /vc/messages` —
+  those are ticket/spec paths that don't exist on this deployment.
+
+## Repo conventions
+
+Branch name matches the folder name (`issuer-webapp`), per `../CLAUDE.md`. Run commands from
+this directory, not the repo root — this app has its own `package.json` and no shared
+workspace tooling ties it to the sibling apps.
